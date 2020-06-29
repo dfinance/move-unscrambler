@@ -1,0 +1,34 @@
+# ToDo
+
+- [~] disassembler
+	- [+] basic disassembler
+	- [~] fn params full support
+	- [~] fn T-params full support
+- [~+] dependency resolver
+	- [~+] offline: passed args (need ref.)
+	- [~] offline: near files
+	- [-] offline: by connected DS (node)
+	- [-] online
+- optimization
+	- [~] dependency inliner
+	- [~] dead blocks elliminater
+	- [~] source-map (asm \<- doc)
+- analyser
+	- [~+] control flow analysis
+	- [~+] reversed eval
+	- [-] fn `T`-params ctx support
+	- possible values на основе min-max типа и анализа арифметики для сужения min-max рамок значения.
+	- [~+] conclusions
+- render
+	- [+] module
+	- [+] script
+	- [+] fn section
+		- [~] fn`<T>`
+		- [~] fn meta
+		- [+] fn knoleges
+	- [~+] structs
+		- [~] structs`<T>`
+	- [~+] merge dependencies
+	- [~] asm annotations (by analyser)
+- WASM target
+- type Sam in next week

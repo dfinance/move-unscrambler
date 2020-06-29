@@ -1,0 +1,55 @@
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[package]
+name = "move-describe"
+version = "0.0.1"
+authors = ["Alex Koz. <a@koz.email>"]
+edition = "2018"
+
+[dependencies]
+log = "0.4"
+toml = "0.5"
+anyhow = "1.0.31"
+
+libra = { package = "libra-deps", path = "libra" }
+net = { package = "move-describe-network", path = "net" }
+
+[dependencies.serde]
+version = "1.0"
+features = [ "default", "derive" ]
+
+[target.'cfg(not(wasm32))'.dependencies.env_logger]
+version = "0.7"
+optional = true
+
+[target.'cfg(not(wasm32))'.dependencies.pretty_env_logger]
+version = "0.4.0"
+optional = true
+
+[target.'cfg(not(wasm32))'.dependencies.clap]
+version = "3.0.0-beta.1"
+features = [ "default", "wrap_help" ]
+
+
+[target.'cfg(wasm32)'.dependencies.console_log]
+version = "0.2"
+features = [ "color" ]
+
+
+[features]
+default = [
+	"env_logger",
+	"pretty_log"
+]
+
+pretty_log = [
+	"pretty_env_logger"
+]
+
+
+[workspace]
+members = [
+	"poc", # TODO: refactor, move to the main crate.
+	"libra",
+	"net",
+]

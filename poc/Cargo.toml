@@ -1,0 +1,27 @@
+[package]
+name = "describr"
+version = "0.1.0"
+authors = ["Alex Koz. <a@koz.email>"]
+license = "Apache-2.0"
+publish = false
+edition = "2018"
+
+[dependencies]
+anyhow = "1.0.31"
+colored = "1.9.3"
+structopt = "0.3.15"
+
+bytecode-verifier = { path = "/Users/ak/Developer/Projects/work/Wings/libra/language/bytecode-verifier", version = "0.1.0" }
+bytecode-source-map = { path = "/Users/ak/Developer/Projects/work/Wings/libra/language/compiler/bytecode-source-map", version = "0.1.0" }
+ir-to-bytecode-syntax = { path = "/Users/ak/Developer/Projects/work/Wings/libra/language/compiler/ir-to-bytecode/syntax", version = "0.1.0" }
+libra-types = { path = "/Users/ak/Developer/Projects/work/Wings/libra/language/../types", version = "0.1.0" }
+libra-workspace-hack = { path = "/Users/ak/Developer/Projects/work/Wings/libra/language/../common/workspace-hack", version = "0.1.0" }
+move-core-types = { path = "/Users/ak/Developer/Projects/work/Wings/libra/language/move-core/types", version = "0.1.0" }
+move-ir-types = { path = "/Users/ak/Developer/Projects/work/Wings/libra/language/move-ir/types", version = "0.1.0" }
+vm = { path = "/Users/ak/Developer/Projects/work/Wings/libra/language/vm", version = "0.1.0" }
+move-coverage = { path = "/Users/ak/Developer/Projects/work/Wings/libra/language/tools/move-coverage", version = "0.1.0" }
+
+railroad = "0.1.1"
+
+[features]
+default = []
