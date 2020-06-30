@@ -11,6 +11,8 @@ log = "0.4"
 toml = "0.5"
 anyhow = "1.0.31"
 
+walkdir = "2.3.1"
+
 libra = { package = "libra-deps", path = "libra" }
 net = { package = "move-describe-network", path = "net" }
 

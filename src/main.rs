@@ -10,6 +10,7 @@ extern crate clap;
 
 mod cli;
 // mod cfg;
+mod deps;
 mod disasm;
 mod analyze;
 mod output;
@@ -69,6 +70,22 @@ fn validate_config(mut opts: cli::Opts) -> Result<cli::Opts> {
 fn run(opts: cli::Opts) {
 	debug!("args: {:#?}", opts);
 
+	let get_dependency: Box<dyn Fn()> = if let Some(ds_uri) = opts.input.ds.as_ref() {
+		Box::new(move || {
+			let cfg = net::NetCfg::new(ds_uri);
+			// let bc = net::get(&AccountAddress::random(), "Foo".to_owned(), &cfg)?;
+		})
+	} else {
+		Box::new(|| {
+			// TODO: find by args in the fs
+		})
+	};
+
 	use libra::libra_types::account_address::AccountAddress;
 	// net::get(AccountAddress::random(), &"Foo", opts.output)
+
+	let deps = deps::offline::OfflineDependencyResolver::new_from_opts(&opts.input);
 }
+
+
+fn get_dependency_net() {}

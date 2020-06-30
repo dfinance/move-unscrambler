@@ -88,6 +88,10 @@ pub struct Input {
 	#[clap(short, long, name = "directory or file")]
 	pub dependencies: Vec<PathBuf>,
 
+	/// Enables recursive search dependencies.
+	#[clap(short="r", long="recursive")]
+	pub search_recursive: bool,
+
 
 	/// Disables any online requests such as
 	/// resolving dependencies by shared node.
@@ -96,7 +100,7 @@ pub struct Input {
 
 	/// Sets URI to shared data-source.
 	/// Used to resolve dependencies online by shared node.
-	/// Can be disabled by pass --offline.
+	/// Can be disabled by pass --offline flag.
 	#[clap(long = "online-node", name = "data-source URI")]
 	pub ds: Option<String /* TODO: use http::Uri */>,
 
