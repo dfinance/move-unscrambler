@@ -3,7 +3,6 @@
 #! required min version rustfmt 1.4.15-nightly (aedff61f 2020-05-19)
 edition = "2018"
 version = "One"
-required_version = "1.4.18"
 max_width = 126
 hard_tabs = true
 tab_spaces = 3
