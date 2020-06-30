@@ -10,7 +10,8 @@ use libra::move_core_types::language_storage::ModuleId;
 use libra::move_core_types::identifier::Identifier;
 use libra::libra_types::access_path::AccessPath;
 
-pub fn get(addr: &AccountAddress, name: impl Into<Box<str>>, cfg: &NetCfg) -> Result<Vec<u8>, Error> {
+pub fn get<S>(addr: &AccountAddress, name: impl Into<Box<str>>, cfg: &NetCfg<S>) -> Result<Vec<u8>, Error>
+	where S: AsRef<str> {
 	let path = AccessPath::code_access_path(&ModuleId::new(*addr, Identifier::new(name)?));
 	let url = format!(
 	                  "{base_url}vm/data/{address}/{path}",
@@ -29,14 +30,14 @@ pub fn get(addr: &AccountAddress, name: impl Into<Box<str>>, cfg: &NetCfg) -> Re
 	}
 }
 
-pub struct NetCfg {
-	node_base_url: String,
+pub struct NetCfg<S: AsRef<str>> {
+	node_base_url: S,
 }
 
-impl NetCfg {
-	pub fn new(node_base_url: String) -> Self { NetCfg { node_base_url } }
+impl<S: AsRef<str>> NetCfg<S> {
+	pub fn new(node_base_url: S) -> Self { NetCfg { node_base_url } }
 
-	pub fn node_base_url(&self) -> &str { &self.node_base_url }
+	pub fn node_base_url(&self) -> &str { self.node_base_url.as_ref() }
 }
 
 #[derive(Deserialize, Serialize, Debug, Clone, Default)]
