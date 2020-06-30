@@ -18,7 +18,8 @@ use anyhow::{bail, format_err, Result};
 
 
 fn main() {
-	let opts = cli::try_init().and_then(|opts| validate_config(opts));
+	let opts = validate_config(cli::init());
+
 	match opts {
 		Ok(opts) => run(opts),
 		Err(err) => eprintln!("{0:}\n{0:?}", err),
@@ -43,6 +44,24 @@ fn validate_config(mut opts: cli::Opts) -> Result<cli::Opts> {
 
 	// TODO: read_dir for output dir & opts.output.force
 
+	{
+		use cli::Dialect;
+
+		match (opts.input.online, opts.input.ds.as_ref(), opts.input.dialect) {
+			(true, None, Dialect::Libra) => {
+				warn!("Online mode requested but node URI missed, so online mode will be disabled.");
+				opts.input.online = false;
+			},
+			(true, None, Dialect::Dfinance) => {
+				// TODO: set up default endpoint URI? Are we should share own node?
+			},
+			(false, Some(_), _) => {
+				warn!("Online mode disabled because haven't been requested with --online.");
+			},
+			_ => {},
+		}
+	}
+
 	trace!("cfg & env validated (TODO)");
 	Ok(opts)
 }
@@ -50,4 +69,7 @@ fn validate_config(mut opts: cli::Opts) -> Result<cli::Opts> {
 
 fn run(opts: cli::Opts) {
 	debug!("args: {:#?}", opts);
+
+	use libra::libra_types::account_address::AccountAddress;
+	// net::get(AccountAddress::random(), &"Foo", opts.output)
 }

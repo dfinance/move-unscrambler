@@ -81,7 +81,7 @@ pub struct Input {
 
 	/// Sets type for main input bytecode-file to script or module.
 	#[clap(long, possible_values = &MoveKind::ALL_OPTIONS, default_value = MoveKind::DEFAULT)]
-	kind: MoveKind,
+	pub kind: MoveKind,
 
 	/// Dependencies search directory path.
 	/// Can be used multiple times.
@@ -89,6 +89,9 @@ pub struct Input {
 	pub dependencies: Vec<PathBuf>,
 
 	/// Resolves dependencies online by shared node.
+	// TODO: Maybe there is should be offline instead of online?
+	// It means that requested offline strictly disables any net-requests
+	// and then passed `ds` does not matter so.
 	#[clap(long, name = "online mode")]
 	pub online: bool,
 
@@ -98,12 +101,12 @@ pub struct Input {
 
 	/// Sets Move implementation.
 	#[clap(long, possible_values = &Dialect::ALL_OPTIONS, default_value = Dialect::DEFAULT)]
-	dialect: Dialect,
+	pub dialect: Dialect,
 }
 
 
 #[derive(Clap, Debug)]
-enum MoveKind {
+pub enum MoveKind {
 	Script,
 	Module,
 	Auto,
@@ -131,8 +134,8 @@ impl std::str::FromStr for MoveKind {
 }
 
 
-#[derive(Clap, Debug)]
-enum Dialect {
+#[derive(Clap, Copy, Clone, Debug)]
+pub enum Dialect {
 	Dfinance,
 	Libra,
 }
