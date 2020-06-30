@@ -1,5 +1,6 @@
-pub use clap::Clap;
 use std::path::PathBuf;
+use anyhow::{format_err, Result};
+pub use clap::Clap;
 
 mod logging;
 
@@ -78,6 +79,10 @@ pub struct Input {
 	#[clap(short = "i", long = "input", name = "input file")]
 	pub path: PathBuf,
 
+	/// Sets type for main input bytecode-file to script or module.
+	#[clap(long, possible_values = &MoveKind::ALL_OPTIONS, default_value = MoveKind::DEFAULT)]
+	kind: MoveKind,
+
 	/// Dependencies search directory path.
 	/// Can be used multiple times.
 	#[clap(short, long, name = "directory or file")]
@@ -92,8 +97,37 @@ pub struct Input {
 	pub ds: Option<String /* TODO: use http::Uri */>,
 
 	/// Sets Move implementation.
-	#[clap(long, possible_values = &[Dialect::DFINANCE, Dialect::LIBRA], default_value = Dialect::DEFAULT)]
+	#[clap(long, possible_values = &Dialect::ALL_OPTIONS, default_value = Dialect::DEFAULT)]
 	dialect: Dialect,
+}
+
+
+#[derive(Clap, Debug)]
+enum MoveKind {
+	Script,
+	Module,
+	Auto,
+}
+
+impl MoveKind {
+	const DEFAULT: &'static str = Self::AUTO;
+	const SCRIPT: &'static str = "script";
+	const MODULE: &'static str = "module";
+	const AUTO: &'static str = "auto";
+	const ALL_OPTIONS: [&'static str; 3] = [Self::AUTO, Self::SCRIPT, Self::MODULE];
+}
+
+impl std::str::FromStr for MoveKind {
+	type Err = String;
+
+	fn from_str(s: &str) -> Result<Self, Self::Err> {
+		match s.to_lowercase().as_ref() {
+			Self::AUTO => Ok(Self::Auto),
+			Self::SCRIPT => Ok(Self::Script),
+			Self::MODULE => Ok(Self::Module),
+			_ => Err(format!("Unsupported input type '{}'", s)),
+		}
+	}
 }
 
 
@@ -108,6 +142,7 @@ impl Dialect {
 	const DEFAULT: &'static str = Self::LIBRA;
 	const DFINANCE: &'static str = "dfi";
 	const LIBRA: &'static str = "libra";
+	const ALL_OPTIONS: [&'static str; 2] = [Self::DFINANCE, Self::LIBRA];
 }
 
 impl std::str::FromStr for Dialect {
@@ -115,17 +150,17 @@ impl std::str::FromStr for Dialect {
 
 	fn from_str(s: &str) -> Result<Self, Self::Err> {
 		match s.to_lowercase().as_ref() {
-			Self::DFINANCE => Ok(Dialect::Dfinance),
-			Self::LIBRA => Ok(Dialect::Libra),
+			Self::DFINANCE => Ok(Self::Dfinance),
+			Self::LIBRA => Ok(Self::Libra),
 			_ => Err(format!("Unsupported output format '{}'", s)),
 		}
 	}
 }
 
 
-pub fn try_init() -> Result<Opts, String> {
-	let opts: Opts = Opts::try_parse().map_err(|err| format!("{}", err))?;
-	logging::try_init(opts.log.verbose).map_err(|err| format!("{}", err))?;
+pub fn try_init() -> Result<Opts> {
+	let opts: Opts = Opts::try_parse().map_err(|err| anyhow!("{}", err))?;
+	logging::try_init(opts.log.verbose).map_err(|err| anyhow!("{}", err))?;
 	Ok(opts)
 }
 
