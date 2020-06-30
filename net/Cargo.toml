@@ -6,3 +6,8 @@ edition = "2018"
 [dependencies]
 log = "0.4"
 libra = { package = "libra-deps", path = "../libra" }
+reqwest = { version = "0.10.4", features = ["blocking", "json"] }
+anyhow = "1.0.31"
+serde = "1.0"
+serde_derive = "1.0"
+hex = "0.4.2"
