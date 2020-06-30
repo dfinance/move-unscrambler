@@ -47,22 +47,21 @@ fn validate_config(mut opts: cli::Opts) -> Result<cli::Opts> {
 	{
 		use cli::Dialect;
 
-		match (opts.input.online, opts.input.ds.as_ref(), opts.input.dialect) {
-			(true, None, Dialect::Libra) => {
-				warn!("Online mode requested but node URI missed, so online mode will be disabled.");
-				opts.input.online = false;
+		match (opts.input.offline, opts.input.ds.as_ref(), opts.input.dialect) {
+			(true, Some(_), _) => {
+				opts.input.ds = None;
+				info!("Offline mode requested, so passes node (data-source) URI will be ignored.");
 			},
-			(true, None, Dialect::Dfinance) => {
+			(false, None, Dialect::Libra) => info!("Offline mode turned on 'cause of node URI is missed."),
+			(false, None, Dialect::Dfinance) => {
 				// TODO: set up default endpoint URI? Are we should share own node?
-			},
-			(false, Some(_), _) => {
-				warn!("Online mode disabled because haven't been requested with --online.");
+				// opts.input.ds = Some("?");
 			},
 			_ => {},
 		}
 	}
 
-	trace!("cfg & env validated (TODO)");
+	trace!("cfg & env validated");
 	Ok(opts)
 }
 

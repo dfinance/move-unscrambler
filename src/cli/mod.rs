@@ -88,15 +88,16 @@ pub struct Input {
 	#[clap(short, long, name = "directory or file")]
 	pub dependencies: Vec<PathBuf>,
 
-	/// Resolves dependencies online by shared node.
-	// TODO: Maybe there is should be offline instead of online?
-	// It means that requested offline strictly disables any net-requests
-	// and then passed `ds` does not matter so.
-	#[clap(long, name = "online mode")]
-	pub online: bool,
 
-	/// Sets URI to shared data-source. Used if online mode enabled.
-	#[clap(long = "online-node")]
+	/// Disables any online requests such as
+	/// resolving dependencies by shared node.
+	#[clap(long, name = "offline mode")]
+	pub offline: bool,
+
+	/// Sets URI to shared data-source.
+	/// Used to resolve dependencies online by shared node.
+	/// Can be disabled by pass --offline.
+	#[clap(long = "online-node", name = "data-source URI")]
 	pub ds: Option<String /* TODO: use http::Uri */>,
 
 	/// Sets Move implementation.
@@ -161,6 +162,7 @@ impl std::str::FromStr for Dialect {
 }
 
 
+#[allow(dead_code)]
 pub fn try_init() -> Result<Opts> {
 	let opts: Opts = Opts::try_parse().map_err(|err| anyhow!("{}", err))?;
 	logging::try_init(opts.log.verbose).map_err(|err| anyhow!("{}", err))?;
