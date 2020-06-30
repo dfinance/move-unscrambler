@@ -11,15 +11,15 @@ anyhow = "1.0.31"
 colored = "1.9.3"
 structopt = "0.3.15"
 
-bytecode-verifier = { path = "/Users/ak/Developer/Projects/work/Wings/libra/language/bytecode-verifier", version = "0.1.0" }
-bytecode-source-map = { path = "/Users/ak/Developer/Projects/work/Wings/libra/language/compiler/bytecode-source-map", version = "0.1.0" }
-ir-to-bytecode-syntax = { path = "/Users/ak/Developer/Projects/work/Wings/libra/language/compiler/ir-to-bytecode/syntax", version = "0.1.0" }
-libra-types = { path = "/Users/ak/Developer/Projects/work/Wings/libra/language/../types", version = "0.1.0" }
-libra-workspace-hack = { path = "/Users/ak/Developer/Projects/work/Wings/libra/language/../common/workspace-hack", version = "0.1.0" }
-move-core-types = { path = "/Users/ak/Developer/Projects/work/Wings/libra/language/move-core/types", version = "0.1.0" }
-move-ir-types = { path = "/Users/ak/Developer/Projects/work/Wings/libra/language/move-ir/types", version = "0.1.0" }
-vm = { path = "/Users/ak/Developer/Projects/work/Wings/libra/language/vm", version = "0.1.0" }
-move-coverage = { path = "/Users/ak/Developer/Projects/work/Wings/libra/language/tools/move-coverage", version = "0.1.0" }
+bytecode-verifier = { package = "bytecode-verifier", git = "https://github.com/dfinance/libra.git" }
+bytecode-source-map = { package = "bytecode-source-map", git = "https://github.com/dfinance/libra.git" }
+ir-to-bytecode-syntax = { package = "ir-to-bytecode-syntax", git = "https://github.com/dfinance/libra.git" }
+libra-types = { package = "libra-types", git = "https://github.com/dfinance/libra.git" }
+libra-workspace-hack = { package = "libra-workspace-hack", git = "https://github.com/dfinance/libra.git" }
+move-core-types = { package = "move-core-types", git = "https://github.com/dfinance/libra.git" }
+move-ir-types = { package = "move-ir-types", git = "https://github.com/dfinance/libra.git" }
+move-coverage = { package = "move-coverage", git = "https://github.com/dfinance/libra.git" }
+vm = { package = "vm", git = "https://github.com/dfinance/libra.git" }
 
 railroad = "0.1.1"
 
