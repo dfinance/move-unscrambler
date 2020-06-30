@@ -41,29 +41,30 @@ impl OfflineDependencyResolver {
 		debug!("adding search dir recursively {}", path.as_ref().display());
 
 		let root = path.into();
-		// self.search_path.push(root.clone());
+		self.search_path.push(root.clone());
 		// let mut sub = std::fs::read_dir(path.as_ref());
 
 		let is_allowed = |entry: &DirEntry| {
 			entry.file_type().is_dir() && !entry.file_name().to_str().map(|s| s.starts_with(".")).unwrap_or(false)
 		};
 
-		let mut towalk: Vec<PathBuf> = vec![root];
-		while let Some(current) = towalk.pop() {
-			for entry in WalkDir::new(current.clone()).follow_links(true)
-			                                          .into_iter()
-			                                          .filter_entry(is_allowed)
-			                                          .filter_map(|e| e.ok())
-			{
-				let sub = entry.path();
-				if current != sub {
-					trace!("added search dir: {}", sub.display());
-					let buf: PathBuf = sub.into();
-					self.search_path.push(buf.clone());
-					towalk.push(buf);
-				}
-			}
-		}
+		WalkDir::new(root).follow_links(true)
+		                  .into_iter()
+		                  .filter_entry(is_allowed)
+		                  .filter_map(|e| e.ok())
+		                  .for_each(|entry| {
+			                  let sub = entry.path();
+			                  self.search_path.push(sub.into());
+			                  trace!("added search dir: {}", sub.display());
+
+			                  // add found files for secondary search level
+			                  if let Ok(dir) = std::fs::read_dir(entry.path()) {
+				                  dir.filter_map(|e| e.ok())
+				                     .filter(|f| matches!(f.path().extension().map(|s| s.to_str()).flatten(), Some("move")))
+				                     .for_each(|f| self.files_secondary.push(f.path()));
+			                  }
+			                  // trace!("added bins:\n{:#?}", self.files_secondary);
+		                  });
 	}
 
 	pub fn add_search_file<T>(&mut self, path: T)
@@ -72,3 +73,15 @@ impl OfflineDependencyResolver {
 		self.files_primary.push(path.into());
 	}
 }
+
+
+// let move_binary = |entry: &DirEntry| {
+// 	// self.files_secondary.push(entry)
+// 	// entry.file_type().is_dir() && !entry.file_name().to_str().map(|s| s.starts_with(".")).unwrap_or(false)
+// 	let ext = entry.path().extension();
+// 	let is = ext.is_some() && ext.unwrap() == "move";
+// 	// if is {
+// 	// 	self.files_secondary.push(entry.into_path());
+// 	// }
+// 	is
+// };
