@@ -32,7 +32,9 @@ mod console {
 
 	pub type Error = log::SetLoggerError;
 
-	pub fn try_init(level: u8) -> Result<(), self::Error> { console_log::init_with_level(log_level_from_num(level)) }
+	pub fn try_init(level: u8) -> Result<(), self::Error> {
+		console_log::init_with_level(log_level_from_num(level))
+	}
 	pub fn init(level: u8) {
 		console_log::init_with_level(log_level_from_num(level)).expect("Unable to initialize logger")
 	}

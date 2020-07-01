@@ -163,7 +163,11 @@ fn render_sec(addr: &AccountAddress, name: &str, sec: &Section, out_dir: &Path) 
 					res.push_str(&format!("Contains control-flow ops\n\n"));
 					if let Some(cfg) = &meta.cfg {
 						// save
-						let san_fname = if fname == DEF_SCRIPT_FN_NAME { "main" } else { fname };
+						let san_fname = if fname == DEF_SCRIPT_FN_NAME {
+							"main"
+						} else {
+							fname
+						};
 						let svg_fname = format!("{}.asm.svg", san_fname);
 						let doc_path = out_dir.to_owned().join(&svg_fname);
 						fs::write(doc_path, cfg.to_string()).ok();
@@ -219,13 +223,15 @@ fn describe_to_doc(bytecode_file_path: &str, is_script: bool, mut doc: &mut Docu
 	let source_mapping = if is_script {
 		println!("# Transaction (script)");
 		doc.is_script = true;
-		let compiled_script = CompiledScript::deserialize(&bytecode_bytes).expect("Script blob can't be deserialized");
+		let compiled_script =
+			CompiledScript::deserialize(&bytecode_bytes).expect("Script blob can't be deserialized");
 		source_map.or_else(|_| SourceMap::dummy_from_script(&compiled_script, no_loc))
 		          .and_then(|source_map| Ok(SourceMapping::new_from_script(source_map, compiled_script)))
 		          .expect("Unable to build source mapping for compiled script")
 	} else {
 		doc.is_script = false;
-		let compiled_module = CompiledModule::deserialize(&bytecode_bytes).expect("Module blob can't be deserialized");
+		let compiled_module =
+			CompiledModule::deserialize(&bytecode_bytes).expect("Module blob can't be deserialized");
 		source_map.or_else(|_| SourceMap::dummy_from_module(&compiled_module, no_loc))
 		          .and_then(|source_map| Ok(SourceMapping::new(source_map, compiled_module)))
 		          .expect("Unable to build source mapping for compiled module")
@@ -335,7 +341,10 @@ fn extract_meta<Loc: Clone + Eq>(map: &SourceMapping<Loc>, doc: &mut Document) {
 	// module_handles
 	let self_addr = bc.address();
 
-	debug_assert_eq!(self_addr == &AccountAddress::new(DEF_SCRIPT_ADDRESS), doc.is_script);
+	debug_assert_eq!(
+	                 self_addr == &AccountAddress::new(DEF_SCRIPT_ADDRESS),
+	                 doc.is_script
+	);
 
 	// println!(" self addr: {}", self_addr);
 	{
@@ -401,7 +410,8 @@ fn extract_fns<Loc: Clone + Eq>(mut dis: &Disassembler<Loc>, mut doc: &mut Docum
 	};
 
 	for f in functions {
-		fnn.entry(f.name.to_owned()).or_insert_with(|| f.signature.to_owned());
+		fnn.entry(f.name.to_owned())
+		   .or_insert_with(|| f.signature.to_owned());
 		fns.entry(f.name.to_owned()).or_insert_with(move || f);
 	}
 }
@@ -515,7 +525,8 @@ fn extract_fn<Loc: Clone + Eq>(i: usize,
 					// dis.struct_type_info(, tys.0);
 
 					// println!("CALL: {}:{}", mh, nh);
-					meta.knoleges.push(format!("{} function {}:{}", pre_can_call, mh, nh));
+					meta.knoleges
+					    .push(format!("{} function {}:{}", pre_can_call, mh, nh));
 				},
 
 				Bytecode::MutBorrowGlobal(sidx) => {
@@ -614,14 +625,25 @@ mod vis {
 
 				let blocks = cfg.blocks();
 				for (i, id) in blocks.iter().enumerate() {
-					println!("\t block_start ({} : {}) : {}", i, id, cfg.block_start(id.to_owned()));
+					println!(
+					         "\t block_start ({} : {}) : {}",
+					         i,
+					         id,
+					         cfg.block_start(id.to_owned())
+					);
 					println!("\t block_end ({} : {}) : {}", i, id, cfg.block_end(id.to_owned()));
-					println!("\t successors ({} : {}) : {:?}", i, id, cfg.successors(id.to_owned()));
+					println!(
+					         "\t successors ({} : {}) : {:?}",
+					         i,
+					         id,
+					         cfg.successors(id.to_owned())
+					);
 				}
 
 				seq.push(Box::new(SimpleEnd));
 				let mut dia = Diagram::new(seq);
-				dia.add_element(svg::Element::new("style").set("type", "text/css").text(DEFAULT_CSS));
+				dia.add_element(svg::Element::new("style").set("type", "text/css")
+				                                          .text(DEFAULT_CSS));
 				// println!("{}", dia.to_string());
 				Some(dia)
 			} else {
@@ -697,7 +719,10 @@ fn _describe_module(m: &CompiledModule) {
 	println!("FunctionHandle: {}", m.kind_count(IndexKind::FunctionHandle));
 	println!("FieldHandle: {}", m.kind_count(IndexKind::FieldHandle));
 	println!("Signature: {}", m.kind_count(IndexKind::Signature));
-	println!("AddressIdentifier: {}", m.kind_count(IndexKind::AddressIdentifier));
+	println!(
+	         "AddressIdentifier: {}",
+	         m.kind_count(IndexKind::AddressIdentifier)
+	);
 	println!("Identifier: {}", m.kind_count(IndexKind::Identifier));
 
 	// PROTO

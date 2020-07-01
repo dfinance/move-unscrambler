@@ -51,7 +51,11 @@ impl OfflineDependencySearch {
 		self.search_path.push(root.clone());
 
 		let is_allowed = |entry: &DirEntry| {
-			entry.file_type().is_dir() && !entry.file_name().to_str().map(|s| s.starts_with(".")).unwrap_or(false)
+			entry.file_type().is_dir() &&
+			!entry.file_name()
+			      .to_str()
+			      .map(|s| s.starts_with("."))
+			      .unwrap_or(false)
 		};
 
 		let mut add_secondary = Vec::new();
@@ -98,7 +102,9 @@ impl OfflineDependencySearch {
 		self.files_primary.iter().chain(self.files_secondary.iter())
 	}
 	pub fn into_all_files(self) -> impl Iterator<Item = PathBuf> {
-		self.files_primary.into_iter().chain(self.files_secondary.into_iter())
+		self.files_primary
+		    .into_iter()
+		    .chain(self.files_secondary.into_iter())
 	}
 
 	pub fn has_file<T: AsRef<Path>>(&self, path: T) -> bool {
