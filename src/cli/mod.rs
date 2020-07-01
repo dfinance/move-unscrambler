@@ -74,6 +74,19 @@ impl std::str::FromStr for OutputFmt {
 
 #[derive(Clap, Debug)]
 pub struct Input {
+	#[clap(flatten)]
+	pub online: InputNet,
+
+	#[clap(flatten)]
+	pub offline: InputFs,
+
+	/// Sets Move implementation.
+	#[clap(long, possible_values = &Dialect::ALL_OPTIONS, default_value = Dialect::DEFAULT)]
+	pub dialect: Dialect,
+}
+
+#[derive(Clap, Debug)]
+pub struct InputFs {
 	// TODO: /// Input file path of 0x-address
 	/// Input bytecode-file path.
 	#[clap(short = "i", long = "input", name = "input file")]
@@ -89,10 +102,16 @@ pub struct Input {
 	pub dependencies: Vec<PathBuf>,
 
 	/// Enables recursive search dependencies.
-	#[clap(short="r", long="recursive")]
+	#[clap(short = "r", long = "recursive")]
 	pub search_recursive: bool,
 
+	/// Follow symbolic links when search dependencies.
+	#[clap(long = "follow-symlinks")]
+	pub follow_symlinks: bool,
+}
 
+#[derive(Clap, Debug)]
+pub struct InputNet {
 	/// Disables any online requests such as
 	/// resolving dependencies by shared node.
 	#[clap(long, name = "offline mode")]
@@ -101,12 +120,8 @@ pub struct Input {
 	/// Sets URI to shared data-source.
 	/// Used to resolve dependencies online by shared node.
 	/// Can be disabled by pass --offline flag.
-	#[clap(long = "online-node", name = "data-source URI")]
+	#[clap(long = "data-source", name = "URI")]
 	pub ds: Option<String /* TODO: use http::Uri */>,
-
-	/// Sets Move implementation.
-	#[clap(long, possible_values = &Dialect::ALL_OPTIONS, default_value = Dialect::DEFAULT)]
-	pub dialect: Dialect,
 }
 
 

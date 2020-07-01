@@ -25,7 +25,7 @@ fn main() {
 		Ok(opts) => run(opts),
 		Err(err) => eprintln!("{0:}\n{0:?}", err),
 	}
-	trace!("shutdown");
+	trace!("♥️");
 }
 
 
@@ -34,9 +34,9 @@ fn validate_config(mut opts: cli::Opts) -> Result<cli::Opts> {
 	use std::fs::create_dir_all;
 	use std::fs::canonicalize;
 
-	opts.input.path = canonicalize(&opts.input.path)?;
+	opts.input.offline.path = canonicalize(&opts.input.offline.path)?;
 
-	for dep in opts.input.dependencies.iter_mut() {
+	for dep in opts.input.offline.dependencies.iter_mut() {
 		*dep = canonicalize(&dep)?;
 	}
 
@@ -48,9 +48,9 @@ fn validate_config(mut opts: cli::Opts) -> Result<cli::Opts> {
 	{
 		use cli::Dialect;
 
-		match (opts.input.offline, opts.input.ds.as_ref(), opts.input.dialect) {
+		match (opts.input.online.offline, opts.input.online.ds.as_ref(), opts.input.dialect) {
 			(true, Some(_), _) => {
-				opts.input.ds = None;
+				opts.input.online.ds = None;
 				info!("Offline mode requested, so passes node (data-source) URI will be ignored.");
 			},
 			(false, None, Dialect::Libra) => info!("Offline mode turned on 'cause of node URI is missed."),
@@ -70,10 +70,12 @@ fn validate_config(mut opts: cli::Opts) -> Result<cli::Opts> {
 fn run(opts: cli::Opts) {
 	debug!("args: {:#?}", opts);
 
-	let get_dependency: Box<dyn Fn()> = if let Some(ds_uri) = opts.input.ds.as_ref() {
+	let get_dependency: Box<dyn Fn()> = if let Some(ds_uri) = opts.input.online.ds.as_ref() {
 		Box::new(move || {
 			let cfg = net::NetCfg::new(ds_uri);
-			// let bc = net::get(&AccountAddress::random(), "Foo".to_owned(), &cfg)?;
+			// let bc = net::get(&AccountAddress::random(), "Account".to_owned(), &cfg).unwrap();
+			let bc = net::get(&AccountAddress::from_hex_literal("0x0").unwrap(), "Account".to_owned(), &cfg).unwrap();
+			debug!("bc: {:?}", bc);
 		})
 	} else {
 		Box::new(|| {
@@ -84,7 +86,15 @@ fn run(opts: cli::Opts) {
 	use libra::libra_types::account_address::AccountAddress;
 	// net::get(AccountAddress::random(), &"Foo", opts.output)
 
-	let deps = deps::offline::OfflineDependencyResolver::new_from_opts(&opts.input);
+	let mut deps = deps::offline::OfflineDependencySearch::new_from_opts(&opts.input.offline);
+
+	opts.input.offline.dependencies.iter().for_each(|dir| {
+		                                      deps.add_search_dir(&dir);
+	                                      });
+
+	println!("deps: {:?}", deps);
+
+	get_dependency();
 }
 
 
