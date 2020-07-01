@@ -1,7 +1,11 @@
 extern crate walkdir;
 use walkdir::{DirEntry, WalkDir};
 use std::path::{PathBuf, Path};
+use std::io::{Result, Error};
+use std::fs;
 
+
+const MOVE_BIN_EXT: &str = "mv";
 
 #[derive(Default, Debug, Clone)]
 pub struct OfflineDependencySearch {
@@ -23,7 +27,7 @@ impl OfflineDependencySearch {
 		let mut deps = Self::new(opts.search_recursive, opts.follow_symlinks);
 		opts.dependencies.iter().for_each(|d| {
 			                        match d.extension().map(|s| s.to_str()).flatten() {
-				                        Some("move") => deps.add_search_file(d),
+				                        Some(MOVE_BIN_EXT) => deps.add_search_file(d),
 			                           _ => deps.add_search_dir(d),
 			                        }
 		                        });
@@ -64,10 +68,10 @@ impl OfflineDependencySearch {
 				                  trace!("added search dir: {}", sub.display());
 
 				                  // add found files for secondary search level
-				                  if let Ok(dir) = std::fs::read_dir(entry.path()) {
+				                  if let Ok(dir) = fs::read_dir(entry.path()) {
 					                  dir.filter_map(|e| e.ok())
 					                     // filter .move files only
-					                     .filter(|p| matches!(p.path().extension().map(|s| s.to_str()).flatten(), Some("move")))
+					                     .filter(|p| matches!(p.path().extension().map(|s| s.to_str()).flatten(), Some(MOVE_BIN_EXT)))
 					                     // prevent duplicates
 					                     .filter(|p| !self.files_primary.contains(&p.path()))
 					                     .filter(|p| !self.files_secondary.contains(&p.path()))
@@ -90,11 +94,22 @@ impl OfflineDependencySearch {
 }
 
 impl OfflineDependencySearch {
+	pub fn all_files(&self) -> impl Iterator<Item = &PathBuf> {
+		self.files_primary.iter().chain(self.files_secondary.iter())
+	}
+	pub fn into_all_files(self) -> impl Iterator<Item = PathBuf> {
+		self.files_primary.into_iter().chain(self.files_secondary.into_iter())
+	}
+
 	pub fn has_file<T: AsRef<Path>>(&self, path: T) -> bool {
 		// chained `contains` impl:
-		self.files_primary
-		    .iter()
-		    .chain(self.files_secondary.iter())
-		    .any(|p| p.as_path() == path.as_ref())
+		self.all_files().any(|p| p.as_path() == path.as_ref())
+	}
+}
+
+
+impl OfflineDependencySearch {
+	pub fn into_load_all(self) -> impl Iterator<Item = (PathBuf, Result<Vec<u8>>)> {
+		self.into_all_files().map(|p| (p.clone(), fs::read(p)))
 	}
 }

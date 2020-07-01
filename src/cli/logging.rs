@@ -24,23 +24,25 @@ fn log_level_from_num(level: u8) -> Level {
 
 
 #[cfg(feature = "console_log")]
-pub use _console_log::*;
+pub use console::*;
 #[cfg(feature = "console_log")]
-mod _console_log {
+mod console {
 	use super::*;
 	extern crate console_log;
 
 	pub type Error = log::SetLoggerError;
 
 	pub fn try_init(level: u8) -> Result<(), self::Error> { console_log::init_with_level(log_level_from_num(level)) }
-	pub fn init(level: u8) { console_log::init_with_level(log_level_from_num(level)).expect("Unable to initialize logger") }
+	pub fn init(level: u8) {
+		console_log::init_with_level(log_level_from_num(level)).expect("Unable to initialize logger")
+	}
 }
 
 
 #[cfg(any(feature = "env_logger", feature = "pretty_env_logger"))]
-pub use _env_logger::*;
+pub use logger::*;
 #[cfg(any(feature = "env_logger", feature = "pretty_env_logger"))]
-mod _env_logger {
+mod logger {
 	// TODO: init pretty_env_logger when interactive tty only
 	use super::*;
 	#[cfg(all(feature = "env_logger", not(feature = "pretty_env_logger")))]
@@ -54,12 +56,18 @@ mod _env_logger {
 
 	pub fn try_init(level: u8) -> Result<(), self::Error> {
 		apply_env_log_level(level);
-		env_logger::try_init()?;
+		env_logger::try_init().map(print_intro_message)?;
 		Ok(())
 	}
 
 	pub fn init(level: u8) {
 		apply_env_log_level(level);
 		env_logger::init();
+		print_intro_message(());
+	}
+
+	fn print_intro_message<T>(v: T) -> T {
+		debug!("Debug logging enabled. Happy debugging!");
+		v
 	}
 }

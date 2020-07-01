@@ -74,7 +74,11 @@ fn run(opts: cli::Opts) {
 		Box::new(move || {
 			let cfg = net::NetCfg::new(ds_uri);
 			// let bc = net::get(&AccountAddress::random(), "Account".to_owned(), &cfg).unwrap();
-			let bc = net::get(&AccountAddress::from_hex_literal("0x0").unwrap(), "Account".to_owned(), &cfg).unwrap();
+			let bc = net::get(
+			                  &AccountAddress::from_hex_literal("0x0").unwrap(),
+			                  "Account".to_owned(),
+			                  &cfg,
+			).unwrap();
 			debug!("bc: {:?}", bc);
 		})
 	} else {
@@ -88,11 +92,16 @@ fn run(opts: cli::Opts) {
 
 	let mut deps = deps::offline::OfflineDependencySearch::new_from_opts(&opts.input.offline);
 
-	opts.input.offline.dependencies.iter().for_each(|dir| {
-		                                      deps.add_search_dir(&dir);
-	                                      });
-
-	println!("deps: {:?}", deps);
+	let mut dg = deps::index::DependencyIndex::default();
+	deps.into_load_all()
+	   //  .map(|(k, v)| (k, v.map(disasm::deserialize_module)))
+	    .for_each(|(k, v)| {
+		    match v {
+			    Ok(bytes) => dg.insert_file(k, bytes),
+		       Err(err) => error!("Unable to load {} : {}", k.as_path().display(), err),
+		    }
+	    });
+	dg.build_deps_links();
 
 	get_dependency();
 }
