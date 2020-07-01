@@ -97,6 +97,7 @@ fn run(opts: cli::Opts) {
 	   //  .map(|(k, v)| (k, v.map(disasm::deserialize_module)))
 	    .for_each(|(k, v)| {
 		    match v {
+
 			    Ok(bytes) => dg.insert_file(k, bytes),
 		       Err(err) => error!("Unable to load {} : {}", k.as_path().display(), err),
 		    }

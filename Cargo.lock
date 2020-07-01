@@ -229,9 +229,9 @@ dependencies = [
 [[package]]
 name = "borrow-graph"
 version = "0.0.1"
-source = "git+https://github.com/libra/libra.git#6190f23a37cd4c4f9e4b4ecf1eb650265c03429c"
+source = "git+https://github.com/libra/libra.git?rev=6190f23a37cd4c4f9e4b4ecf1eb650265c03429c#6190f23a37cd4c4f9e4b4ecf1eb650265c03429c"
 dependencies = [
- "libra-workspace-hack 0.1.0 (git+https://github.com/libra/libra.git)",
+ "libra-workspace-hack 0.1.0 (git+https://github.com/libra/libra.git?rev=6190f23a37cd4c4f9e4b4ecf1eb650265c03429c)",
  "mirai-annotations",
 ]
 
@@ -267,18 +267,18 @@ dependencies = [
 [[package]]
 name = "bytecode-source-map"
 version = "0.1.0"
-source = "git+https://github.com/libra/libra.git#6190f23a37cd4c4f9e4b4ecf1eb650265c03429c"
+source = "git+https://github.com/libra/libra.git?rev=6190f23a37cd4c4f9e4b4ecf1eb650265c03429c#6190f23a37cd4c4f9e4b4ecf1eb650265c03429c"
 dependencies = [
  "anyhow",
  "codespan",
  "codespan-reporting",
- "libra-canonical-serialization 0.1.0 (git+https://github.com/libra/libra.git)",
- "libra-types 0.1.0 (git+https://github.com/libra/libra.git)",
- "libra-workspace-hack 0.1.0 (git+https://github.com/libra/libra.git)",
- "move-core-types 0.1.0 (git+https://github.com/libra/libra.git)",
- "move-ir-types 0.1.0 (git+https://github.com/libra/libra.git)",
+ "libra-canonical-serialization 0.1.0 (git+https://github.com/libra/libra.git?rev=6190f23a37cd4c4f9e4b4ecf1eb650265c03429c)",
+ "libra-types 0.1.0 (git+https://github.com/libra/libra.git?rev=6190f23a37cd4c4f9e4b4ecf1eb650265c03429c)",
+ "libra-workspace-hack 0.1.0 (git+https://github.com/libra/libra.git?rev=6190f23a37cd4c4f9e4b4ecf1eb650265c03429c)",
+ "move-core-types 0.1.0 (git+https://github.com/libra/libra.git?rev=6190f23a37cd4c4f9e4b4ecf1eb650265c03429c)",
+ "move-ir-types 0.1.0 (git+https://github.com/libra/libra.git?rev=6190f23a37cd4c4f9e4b4ecf1eb650265c03429c)",
  "serde",
- "vm 0.1.0 (git+https://github.com/libra/libra.git)",
+ "vm 0.1.0 (git+https://github.com/libra/libra.git?rev=6190f23a37cd4c4f9e4b4ecf1eb650265c03429c)",
 ]
 
 [[package]]
@@ -299,16 +299,16 @@ dependencies = [
 [[package]]
 name = "bytecode-verifier"
 version = "0.1.0"
-source = "git+https://github.com/libra/libra.git#6190f23a37cd4c4f9e4b4ecf1eb650265c03429c"
+source = "git+https://github.com/libra/libra.git?rev=6190f23a37cd4c4f9e4b4ecf1eb650265c03429c#6190f23a37cd4c4f9e4b4ecf1eb650265c03429c"
 dependencies = [
  "anyhow",
- "borrow-graph 0.0.1 (git+https://github.com/libra/libra.git)",
- "libra-types 0.1.0 (git+https://github.com/libra/libra.git)",
- "libra-workspace-hack 0.1.0 (git+https://github.com/libra/libra.git)",
+ "borrow-graph 0.0.1 (git+https://github.com/libra/libra.git?rev=6190f23a37cd4c4f9e4b4ecf1eb650265c03429c)",
+ "libra-types 0.1.0 (git+https://github.com/libra/libra.git?rev=6190f23a37cd4c4f9e4b4ecf1eb650265c03429c)",
+ "libra-workspace-hack 0.1.0 (git+https://github.com/libra/libra.git?rev=6190f23a37cd4c4f9e4b4ecf1eb650265c03429c)",
  "mirai-annotations",
- "move-core-types 0.1.0 (git+https://github.com/libra/libra.git)",
+ "move-core-types 0.1.0 (git+https://github.com/libra/libra.git?rev=6190f23a37cd4c4f9e4b4ecf1eb650265c03429c)",
  "petgraph",
- "vm 0.1.0 (git+https://github.com/libra/libra.git)",
+ "vm 0.1.0 (git+https://github.com/libra/libra.git?rev=6190f23a37cd4c4f9e4b4ecf1eb650265c03429c)",
 ]
 
 [[package]]
@@ -958,15 +958,15 @@ dependencies = [
 [[package]]
 name = "ir-to-bytecode-syntax"
 version = "0.1.0"
-source = "git+https://github.com/libra/libra.git#6190f23a37cd4c4f9e4b4ecf1eb650265c03429c"
+source = "git+https://github.com/libra/libra.git?rev=6190f23a37cd4c4f9e4b4ecf1eb650265c03429c#6190f23a37cd4c4f9e4b4ecf1eb650265c03429c"
 dependencies = [
  "anyhow",
  "codespan",
  "hex",
- "libra-types 0.1.0 (git+https://github.com/libra/libra.git)",
- "libra-workspace-hack 0.1.0 (git+https://github.com/libra/libra.git)",
- "move-core-types 0.1.0 (git+https://github.com/libra/libra.git)",
- "move-ir-types 0.1.0 (git+https://github.com/libra/libra.git)",
+ "libra-types 0.1.0 (git+https://github.com/libra/libra.git?rev=6190f23a37cd4c4f9e4b4ecf1eb650265c03429c)",
+ "libra-workspace-hack 0.1.0 (git+https://github.com/libra/libra.git?rev=6190f23a37cd4c4f9e4b4ecf1eb650265c03429c)",
+ "move-core-types 0.1.0 (git+https://github.com/libra/libra.git?rev=6190f23a37cd4c4f9e4b4ecf1eb650265c03429c)",
+ "move-ir-types 0.1.0 (git+https://github.com/libra/libra.git?rev=6190f23a37cd4c4f9e4b4ecf1eb650265c03429c)",
 ]
 
 [[package]]
@@ -1043,9 +1043,9 @@ dependencies = [
 [[package]]
 name = "libra-canonical-serialization"
 version = "0.1.0"
-source = "git+https://github.com/libra/libra.git#6190f23a37cd4c4f9e4b4ecf1eb650265c03429c"
+source = "git+https://github.com/libra/libra.git?rev=6190f23a37cd4c4f9e4b4ecf1eb650265c03429c#6190f23a37cd4c4f9e4b4ecf1eb650265c03429c"
 dependencies = [
- "libra-workspace-hack 0.1.0 (git+https://github.com/libra/libra.git)",
+ "libra-workspace-hack 0.1.0 (git+https://github.com/libra/libra.git?rev=6190f23a37cd4c4f9e4b4ecf1eb650265c03429c)",
  "serde",
  "thiserror",
 ]
@@ -1084,7 +1084,7 @@ dependencies = [
 [[package]]
 name = "libra-crypto"
 version = "0.1.0"
-source = "git+https://github.com/libra/libra.git#6190f23a37cd4c4f9e4b4ecf1eb650265c03429c"
+source = "git+https://github.com/libra/libra.git?rev=6190f23a37cd4c4f9e4b4ecf1eb650265c03429c#6190f23a37cd4c4f9e4b4ecf1eb650265c03429c"
 dependencies = [
  "aes-gcm 0.6.0",
  "anyhow",
@@ -1094,10 +1094,10 @@ dependencies = [
  "ed25519-dalek",
  "hex",
  "hmac 0.8.1",
- "libra-canonical-serialization 0.1.0 (git+https://github.com/libra/libra.git)",
- "libra-crypto-derive 0.1.0 (git+https://github.com/libra/libra.git)",
- "libra-nibble 0.1.0 (git+https://github.com/libra/libra.git)",
- "libra-workspace-hack 0.1.0 (git+https://github.com/libra/libra.git)",
+ "libra-canonical-serialization 0.1.0 (git+https://github.com/libra/libra.git?rev=6190f23a37cd4c4f9e4b4ecf1eb650265c03429c)",
+ "libra-crypto-derive 0.1.0 (git+https://github.com/libra/libra.git?rev=6190f23a37cd4c4f9e4b4ecf1eb650265c03429c)",
+ "libra-nibble 0.1.0 (git+https://github.com/libra/libra.git?rev=6190f23a37cd4c4f9e4b4ecf1eb650265c03429c)",
+ "libra-workspace-hack 0.1.0 (git+https://github.com/libra/libra.git?rev=6190f23a37cd4c4f9e4b4ecf1eb650265c03429c)",
  "mirai-annotations",
  "once_cell",
  "rand",
@@ -1126,9 +1126,9 @@ dependencies = [
 [[package]]
 name = "libra-crypto-derive"
 version = "0.1.0"
-source = "git+https://github.com/libra/libra.git#6190f23a37cd4c4f9e4b4ecf1eb650265c03429c"
+source = "git+https://github.com/libra/libra.git?rev=6190f23a37cd4c4f9e4b4ecf1eb650265c03429c#6190f23a37cd4c4f9e4b4ecf1eb650265c03429c"
 dependencies = [
- "libra-workspace-hack 0.1.0 (git+https://github.com/libra/libra.git)",
+ "libra-workspace-hack 0.1.0 (git+https://github.com/libra/libra.git?rev=6190f23a37cd4c4f9e4b4ecf1eb650265c03429c)",
  "proc-macro2",
  "quote",
  "syn",
@@ -1138,15 +1138,15 @@ dependencies = [
 name = "libra-deps"
 version = "0.1.0"
 dependencies = [
- "bytecode-source-map 0.1.0 (git+https://github.com/libra/libra.git)",
- "bytecode-verifier 0.1.0 (git+https://github.com/libra/libra.git)",
- "ir-to-bytecode-syntax 0.1.0 (git+https://github.com/libra/libra.git)",
- "libra-types 0.1.0 (git+https://github.com/libra/libra.git)",
- "libra-workspace-hack 0.1.0 (git+https://github.com/libra/libra.git)",
- "move-core-types 0.1.0 (git+https://github.com/libra/libra.git)",
- "move-coverage 0.1.0 (git+https://github.com/libra/libra.git)",
- "move-ir-types 0.1.0 (git+https://github.com/libra/libra.git)",
- "vm 0.1.0 (git+https://github.com/libra/libra.git)",
+ "bytecode-source-map 0.1.0 (git+https://github.com/libra/libra.git?rev=6190f23a37cd4c4f9e4b4ecf1eb650265c03429c)",
+ "bytecode-verifier 0.1.0 (git+https://github.com/libra/libra.git?rev=6190f23a37cd4c4f9e4b4ecf1eb650265c03429c)",
+ "ir-to-bytecode-syntax 0.1.0 (git+https://github.com/libra/libra.git?rev=6190f23a37cd4c4f9e4b4ecf1eb650265c03429c)",
+ "libra-types 0.1.0 (git+https://github.com/libra/libra.git?rev=6190f23a37cd4c4f9e4b4ecf1eb650265c03429c)",
+ "libra-workspace-hack 0.1.0 (git+https://github.com/libra/libra.git?rev=6190f23a37cd4c4f9e4b4ecf1eb650265c03429c)",
+ "move-core-types 0.1.0 (git+https://github.com/libra/libra.git?rev=6190f23a37cd4c4f9e4b4ecf1eb650265c03429c)",
+ "move-coverage 0.1.0 (git+https://github.com/libra/libra.git?rev=6190f23a37cd4c4f9e4b4ecf1eb650265c03429c)",
+ "move-ir-types 0.1.0 (git+https://github.com/libra/libra.git?rev=6190f23a37cd4c4f9e4b4ecf1eb650265c03429c)",
+ "vm 0.1.0 (git+https://github.com/libra/libra.git?rev=6190f23a37cd4c4f9e4b4ecf1eb650265c03429c)",
 ]
 
 [[package]]
@@ -1165,11 +1165,11 @@ dependencies = [
 [[package]]
 name = "libra-network-address"
 version = "0.1.0"
-source = "git+https://github.com/libra/libra.git#6190f23a37cd4c4f9e4b4ecf1eb650265c03429c"
+source = "git+https://github.com/libra/libra.git?rev=6190f23a37cd4c4f9e4b4ecf1eb650265c03429c#6190f23a37cd4c4f9e4b4ecf1eb650265c03429c"
 dependencies = [
- "libra-canonical-serialization 0.1.0 (git+https://github.com/libra/libra.git)",
- "libra-crypto 0.1.0 (git+https://github.com/libra/libra.git)",
- "libra-workspace-hack 0.1.0 (git+https://github.com/libra/libra.git)",
+ "libra-canonical-serialization 0.1.0 (git+https://github.com/libra/libra.git?rev=6190f23a37cd4c4f9e4b4ecf1eb650265c03429c)",
+ "libra-crypto 0.1.0 (git+https://github.com/libra/libra.git?rev=6190f23a37cd4c4f9e4b4ecf1eb650265c03429c)",
+ "libra-workspace-hack 0.1.0 (git+https://github.com/libra/libra.git?rev=6190f23a37cd4c4f9e4b4ecf1eb650265c03429c)",
  "serde",
  "serde_bytes",
  "thiserror",
@@ -1187,9 +1187,9 @@ dependencies = [
 [[package]]
 name = "libra-nibble"
 version = "0.1.0"
-source = "git+https://github.com/libra/libra.git#6190f23a37cd4c4f9e4b4ecf1eb650265c03429c"
+source = "git+https://github.com/libra/libra.git?rev=6190f23a37cd4c4f9e4b4ecf1eb650265c03429c#6190f23a37cd4c4f9e4b4ecf1eb650265c03429c"
 dependencies = [
- "libra-workspace-hack 0.1.0 (git+https://github.com/libra/libra.git)",
+ "libra-workspace-hack 0.1.0 (git+https://github.com/libra/libra.git?rev=6190f23a37cd4c4f9e4b4ecf1eb650265c03429c)",
  "serde",
 ]
 
@@ -1222,20 +1222,20 @@ dependencies = [
 [[package]]
 name = "libra-types"
 version = "0.1.0"
-source = "git+https://github.com/libra/libra.git#6190f23a37cd4c4f9e4b4ecf1eb650265c03429c"
+source = "git+https://github.com/libra/libra.git?rev=6190f23a37cd4c4f9e4b4ecf1eb650265c03429c#6190f23a37cd4c4f9e4b4ecf1eb650265c03429c"
 dependencies = [
  "anyhow",
  "bytes",
  "chrono",
  "hex",
  "itertools",
- "libra-canonical-serialization 0.1.0 (git+https://github.com/libra/libra.git)",
- "libra-crypto 0.1.0 (git+https://github.com/libra/libra.git)",
- "libra-crypto-derive 0.1.0 (git+https://github.com/libra/libra.git)",
- "libra-network-address 0.1.0 (git+https://github.com/libra/libra.git)",
- "libra-workspace-hack 0.1.0 (git+https://github.com/libra/libra.git)",
+ "libra-canonical-serialization 0.1.0 (git+https://github.com/libra/libra.git?rev=6190f23a37cd4c4f9e4b4ecf1eb650265c03429c)",
+ "libra-crypto 0.1.0 (git+https://github.com/libra/libra.git?rev=6190f23a37cd4c4f9e4b4ecf1eb650265c03429c)",
+ "libra-crypto-derive 0.1.0 (git+https://github.com/libra/libra.git?rev=6190f23a37cd4c4f9e4b4ecf1eb650265c03429c)",
+ "libra-network-address 0.1.0 (git+https://github.com/libra/libra.git?rev=6190f23a37cd4c4f9e4b4ecf1eb650265c03429c)",
+ "libra-workspace-hack 0.1.0 (git+https://github.com/libra/libra.git?rev=6190f23a37cd4c4f9e4b4ecf1eb650265c03429c)",
  "mirai-annotations",
- "move-core-types 0.1.0 (git+https://github.com/libra/libra.git)",
+ "move-core-types 0.1.0 (git+https://github.com/libra/libra.git?rev=6190f23a37cd4c4f9e4b4ecf1eb650265c03429c)",
  "once_cell",
  "radix_trie 0.2.0",
  "rand",
@@ -1265,7 +1265,7 @@ dependencies = [
 [[package]]
 name = "libra-workspace-hack"
 version = "0.1.0"
-source = "git+https://github.com/libra/libra.git#6190f23a37cd4c4f9e4b4ecf1eb650265c03429c"
+source = "git+https://github.com/libra/libra.git?rev=6190f23a37cd4c4f9e4b4ecf1eb650265c03429c#6190f23a37cd4c4f9e4b4ecf1eb650265c03429c"
 dependencies = [
  "bytes",
  "cc",
@@ -1386,14 +1386,14 @@ dependencies = [
 [[package]]
 name = "move-core-types"
 version = "0.1.0"
-source = "git+https://github.com/libra/libra.git#6190f23a37cd4c4f9e4b4ecf1eb650265c03429c"
+source = "git+https://github.com/libra/libra.git?rev=6190f23a37cd4c4f9e4b4ecf1eb650265c03429c#6190f23a37cd4c4f9e4b4ecf1eb650265c03429c"
 dependencies = [
  "anyhow",
  "hex",
- "libra-canonical-serialization 0.1.0 (git+https://github.com/libra/libra.git)",
- "libra-crypto 0.1.0 (git+https://github.com/libra/libra.git)",
- "libra-crypto-derive 0.1.0 (git+https://github.com/libra/libra.git)",
- "libra-workspace-hack 0.1.0 (git+https://github.com/libra/libra.git)",
+ "libra-canonical-serialization 0.1.0 (git+https://github.com/libra/libra.git?rev=6190f23a37cd4c4f9e4b4ecf1eb650265c03429c)",
+ "libra-crypto 0.1.0 (git+https://github.com/libra/libra.git?rev=6190f23a37cd4c4f9e4b4ecf1eb650265c03429c)",
+ "libra-crypto-derive 0.1.0 (git+https://github.com/libra/libra.git?rev=6190f23a37cd4c4f9e4b4ecf1eb650265c03429c)",
+ "libra-workspace-hack 0.1.0 (git+https://github.com/libra/libra.git?rev=6190f23a37cd4c4f9e4b4ecf1eb650265c03429c)",
  "mirai-annotations",
  "rand",
  "ref-cast",
@@ -1425,21 +1425,21 @@ dependencies = [
 [[package]]
 name = "move-coverage"
 version = "0.1.0"
-source = "git+https://github.com/libra/libra.git#6190f23a37cd4c4f9e4b4ecf1eb650265c03429c"
+source = "git+https://github.com/libra/libra.git?rev=6190f23a37cd4c4f9e4b4ecf1eb650265c03429c#6190f23a37cd4c4f9e4b4ecf1eb650265c03429c"
 dependencies = [
  "anyhow",
- "bytecode-source-map 0.1.0 (git+https://github.com/libra/libra.git)",
+ "bytecode-source-map 0.1.0 (git+https://github.com/libra/libra.git?rev=6190f23a37cd4c4f9e4b4ecf1eb650265c03429c)",
  "codespan",
  "colored",
- "libra-canonical-serialization 0.1.0 (git+https://github.com/libra/libra.git)",
- "libra-types 0.1.0 (git+https://github.com/libra/libra.git)",
- "libra-workspace-hack 0.1.0 (git+https://github.com/libra/libra.git)",
- "move-core-types 0.1.0 (git+https://github.com/libra/libra.git)",
- "move-ir-types 0.1.0 (git+https://github.com/libra/libra.git)",
+ "libra-canonical-serialization 0.1.0 (git+https://github.com/libra/libra.git?rev=6190f23a37cd4c4f9e4b4ecf1eb650265c03429c)",
+ "libra-types 0.1.0 (git+https://github.com/libra/libra.git?rev=6190f23a37cd4c4f9e4b4ecf1eb650265c03429c)",
+ "libra-workspace-hack 0.1.0 (git+https://github.com/libra/libra.git?rev=6190f23a37cd4c4f9e4b4ecf1eb650265c03429c)",
+ "move-core-types 0.1.0 (git+https://github.com/libra/libra.git?rev=6190f23a37cd4c4f9e4b4ecf1eb650265c03429c)",
+ "move-ir-types 0.1.0 (git+https://github.com/libra/libra.git?rev=6190f23a37cd4c4f9e4b4ecf1eb650265c03429c)",
  "once_cell",
  "serde",
  "structopt",
- "vm 0.1.0 (git+https://github.com/libra/libra.git)",
+ "vm 0.1.0 (git+https://github.com/libra/libra.git?rev=6190f23a37cd4c4f9e4b4ecf1eb650265c03429c)",
 ]
 
 [[package]]
@@ -1490,14 +1490,14 @@ dependencies = [
 [[package]]
 name = "move-ir-types"
 version = "0.1.0"
-source = "git+https://github.com/libra/libra.git#6190f23a37cd4c4f9e4b4ecf1eb650265c03429c"
+source = "git+https://github.com/libra/libra.git?rev=6190f23a37cd4c4f9e4b4ecf1eb650265c03429c#6190f23a37cd4c4f9e4b4ecf1eb650265c03429c"
 dependencies = [
  "anyhow",
  "codespan",
  "hex",
- "libra-types 0.1.0 (git+https://github.com/libra/libra.git)",
- "libra-workspace-hack 0.1.0 (git+https://github.com/libra/libra.git)",
- "move-core-types 0.1.0 (git+https://github.com/libra/libra.git)",
+ "libra-types 0.1.0 (git+https://github.com/libra/libra.git?rev=6190f23a37cd4c4f9e4b4ecf1eb650265c03429c)",
+ "libra-workspace-hack 0.1.0 (git+https://github.com/libra/libra.git?rev=6190f23a37cd4c4f9e4b4ecf1eb650265c03429c)",
+ "move-core-types 0.1.0 (git+https://github.com/libra/libra.git?rev=6190f23a37cd4c4f9e4b4ecf1eb650265c03429c)",
  "once_cell",
  "serde",
 ]
@@ -1579,9 +1579,9 @@ dependencies = [
 [[package]]
 name = "num-variants"
 version = "0.1.0"
-source = "git+https://github.com/libra/libra.git#6190f23a37cd4c4f9e4b4ecf1eb650265c03429c"
+source = "git+https://github.com/libra/libra.git?rev=6190f23a37cd4c4f9e4b4ecf1eb650265c03429c#6190f23a37cd4c4f9e4b4ecf1eb650265c03429c"
 dependencies = [
- "libra-workspace-hack 0.1.0 (git+https://github.com/libra/libra.git)",
+ "libra-workspace-hack 0.1.0 (git+https://github.com/libra/libra.git?rev=6190f23a37cd4c4f9e4b4ecf1eb650265c03429c)",
  "proc-macro2",
  "quote",
  "syn",
@@ -2591,14 +2591,14 @@ dependencies = [
 [[package]]
 name = "vm"
 version = "0.1.0"
-source = "git+https://github.com/libra/libra.git#6190f23a37cd4c4f9e4b4ecf1eb650265c03429c"
+source = "git+https://github.com/libra/libra.git?rev=6190f23a37cd4c4f9e4b4ecf1eb650265c03429c#6190f23a37cd4c4f9e4b4ecf1eb650265c03429c"
 dependencies = [
  "anyhow",
- "libra-crypto 0.1.0 (git+https://github.com/libra/libra.git)",
- "libra-workspace-hack 0.1.0 (git+https://github.com/libra/libra.git)",
+ "libra-crypto 0.1.0 (git+https://github.com/libra/libra.git?rev=6190f23a37cd4c4f9e4b4ecf1eb650265c03429c)",
+ "libra-workspace-hack 0.1.0 (git+https://github.com/libra/libra.git?rev=6190f23a37cd4c4f9e4b4ecf1eb650265c03429c)",
  "mirai-annotations",
- "move-core-types 0.1.0 (git+https://github.com/libra/libra.git)",
- "num-variants 0.1.0 (git+https://github.com/libra/libra.git)",
+ "move-core-types 0.1.0 (git+https://github.com/libra/libra.git?rev=6190f23a37cd4c4f9e4b4ecf1eb650265c03429c)",
+ "num-variants 0.1.0 (git+https://github.com/libra/libra.git?rev=6190f23a37cd4c4f9e4b4ecf1eb650265c03429c)",
  "once_cell",
  "ref-cast",
 ]

@@ -19,13 +19,16 @@ pub struct DependencyIndex {
 }
 
 pub struct DependencyInfo {
-	bytecode: CompiledModule,
 	source: DependencySource,
+	bytecode: CompiledModule,
 	dependencies: Vec<IndexKey>,
 }
 
 impl DependencyInfo {
+	pub fn source(&self) -> &DependencySource { &self.source }
 	pub fn address(&self) -> &AccountAddress { self.bytecode.address() }
+	pub fn bytecode(&self) -> &CompiledModule { &self.bytecode }
+	pub fn dependencies(&self) -> &[IndexKey] { &self.dependencies[..] }
 }
 
 pub enum DependencySource {
@@ -64,6 +67,9 @@ impl DependencyIndex {
 
 
 	pub fn build_deps_links(&mut self) {
-		//
+		for (key, info) in self.map.iter_mut() {
+			let deps = disasm::deserialize_module_handles(info.bytecode());
+			debug!("+deps for {}: {:#?}", key.1, deps);
+		}
 	}
 }
