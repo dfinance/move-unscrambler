@@ -3,7 +3,7 @@
 #! required min version rustfmt 1.4.15-nightly (aedff61f 2020-05-19)
 edition = "2018"
 version = "One"
-max_width = 126
+max_width = 120
 hard_tabs = true
 tab_spaces = 3
 newline_style = "Unix"
@@ -11,7 +11,7 @@ use_small_heuristics = "Default"
 indent_style = "Visual"
 wrap_comments = false
 format_code_in_doc_comments = false
-comment_width = 126
+comment_width = 120
 normalize_comments = false
 normalize_doc_attributes = false
 license_template_path = ""
