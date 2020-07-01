@@ -66,7 +66,9 @@ impl OfflineDependencySearch {
 				                  // add found files for secondary search level
 				                  if let Ok(dir) = std::fs::read_dir(entry.path()) {
 					                  dir.filter_map(|e| e.ok())
+					                     // filter .move files only
 					                     .filter(|p| matches!(p.path().extension().map(|s| s.to_str()).flatten(), Some("move")))
+					                     // prevent duplicates
 					                     .filter(|p| !self.files_primary.contains(&p.path()))
 					                     .filter(|p| !self.files_secondary.contains(&p.path()))
 					                     .for_each(|f| add_secondary.push(f.path()));
