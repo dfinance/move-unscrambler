@@ -75,6 +75,7 @@ fn validate_config(mut opts: cli::Opts) -> Result<cli::Opts> {
 fn run(opts: cli::Opts) {
 	let (input_type, input, input_deps) = read_input(&opts);
 	let mut deps = read_offline_deps(&opts);
+	// TODO: add online deps-resolver into the (or wrap it) DependencyMap (deps)
 
 	// TODO: to be continued.
 }
@@ -97,13 +98,8 @@ fn read_input(opts: &cli::Opts) -> (MoveType, CompiledMove, Vec<DependencyMapKey
 	};
 	let input = disasm::CompiledMove::deserialize(&bytes).expect("Input bytecode can't be deserialized");
 	let deps = disasm::deserialize_deps(&input);
-	debug!(
-	       "input.deps: {}",
-	       deps.iter()
-	           .map(|(a, n)| format!("{}.{}", a, n))
-	           .collect::<Vec<_>>()
-	           .join(", ")
-	);
+	#[rustfmt::skip]
+	debug!("input.deps: {}", deps.iter().map(|(a, n)|format!("{}.{}",a,n)).collect::<Vec<_>>().join(", "));
 
 	(source_type, input, deps)
 }

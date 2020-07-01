@@ -70,7 +70,8 @@ impl DependencyMap {
 	pub fn build_deps_links(&mut self) {
 		for (key, info) in self.map.iter_mut() {
 			let deps = disasm::deserialize_module_deps(info.bytecode());
-			debug!("{}.deps: {}", key.1, deps.iter() .map(|(a, n)| format!("{}.{}", a, n)) .collect::<Vec<_>>().join(", "));
+			#[rustfmt::skip]
+			debug!("{}.deps: {}", key.1, deps.iter().map(|(a, n)| format!("{}.{}", a, n)).collect::<Vec<_>>().join(", "));
 			info.dependencies = deps;
 		}
 	}
