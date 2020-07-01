@@ -16,7 +16,8 @@ use std::{fs, path::Path};
 use structopt::StructOpt;
 use vm::{IndexKind,
      file_format::{CompiledModule, CompiledScript, ModuleHandleIndex, TableIndex, StructDefinitionIndex,
-                   FunctionDefinitionIndex, FunctionDefinition, Bytecode, StructHandle, FieldHandleIndex, StructHandleIndex},
+                   FunctionDefinitionIndex, FunctionDefinition, Bytecode, StructHandle, FieldHandleIndex,
+                   StructHandleIndex},
      access::ModuleAccess};
 
 #[derive(Debug, StructOpt)]
@@ -184,7 +185,8 @@ fn describe_to_doc(bytecode_file_path: &str, is_script: bool, mut doc: &mut Docu
 	let source_map_extension = "mvsm";
 
 	let source_path = Path::new(&bytecode_file_path);
-	let extension = source_path.extension().expect("Missing file extension for bytecode file");
+	let extension = source_path.extension()
+	                           .expect("Missing file extension for bytecode file");
 	if extension != mv_bytecode_extension {
 		println!(
 		         "Bad source file extension {:?}; expected {}",
@@ -337,7 +339,10 @@ fn extract_meta<Loc: Clone + Eq>(map: &SourceMapping<Loc>, doc: &mut Document) {
 
 	// println!(" self addr: {}", self_addr);
 	{
-		debug_assert_eq!(bc.kind_count(IndexKind::ModuleHandle), bc.as_inner().module_handles.len());
+		debug_assert_eq!(
+		                 bc.kind_count(IndexKind::ModuleHandle),
+		                 bc.as_inner().module_handles.len()
+		);
 
 		for (i, mh) in bc.as_inner().module_handles.iter().enumerate() {
 			let addr = bc.address_identifier_at(mh.address);
@@ -457,7 +462,11 @@ fn extract_fn<Loc: Clone + Eq>(i: usize,
 			let sh = bc.struct_handle_at(*shidx);
 			let mod_sig = mod_handle_sig(&sh.module);
 			let name = bc.identifier_at(sh.name);
-			let kind = if sh.is_nominal_resource { "resource" } else { "structure" };
+			let kind = if sh.is_nominal_resource {
+				"resource"
+			} else {
+				"structure"
+			};
 			format!("{} {}:{}", kind, mod_sig, name)
 		};
 
@@ -490,7 +499,8 @@ fn extract_fn<Loc: Clone + Eq>(i: usize,
 					let nh = bc.identifier_at(fh.name).as_str();
 					let mh = mod_handle_sig(&fh.module);
 					// println!("CALL: {}.{}", mh, nh);
-					meta.knoleges.push(format!("{} function `0x{}:{}`", pre_can_call, mh, nh));
+					meta.knoleges
+					    .push(format!("{} function `0x{}:{}`", pre_can_call, mh, nh));
 				},
 
 				Bytecode::CallGeneric(idx) => {
