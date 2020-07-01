@@ -16,6 +16,11 @@ mod analyze;
 mod output;
 
 use anyhow::{bail, format_err, Result};
+use cli::InputType;
+use disasm::MoveType;
+use disasm::CompiledMove;
+use deps::map::DependencyMap;
+use deps::map::DependencyMapKey;
 
 
 fn main() {
@@ -34,7 +39,7 @@ fn validate_config(mut opts: cli::Opts) -> Result<cli::Opts> {
 	use std::fs::create_dir_all;
 	use std::fs::canonicalize;
 
-	opts.input.offline.path = canonicalize(&opts.input.offline.path)?;
+	opts.input.path = canonicalize(&opts.input.path)?;
 
 	for dep in opts.input.offline.dependencies.iter_mut() {
 		*dep = canonicalize(&dep)?;
@@ -68,44 +73,50 @@ fn validate_config(mut opts: cli::Opts) -> Result<cli::Opts> {
 
 
 fn run(opts: cli::Opts) {
-	debug!("args: {:#?}", opts);
+	let (input_type, input, input_deps) = read_input(&opts);
+	let mut deps = read_offline_deps(&opts);
 
-	let get_dependency: Box<dyn Fn()> = if let Some(ds_uri) = opts.input.online.ds.as_ref() {
-		Box::new(move || {
-			let cfg = net::NetCfg::new(ds_uri);
-			// let bc = net::get(&AccountAddress::random(), "Account".to_owned(), &cfg).unwrap();
-			let bc = net::get(
-			                  &AccountAddress::from_hex_literal("0x0").unwrap(),
-			                  "Account".to_owned(),
-			                  &cfg,
-			).unwrap();
-			debug!("bc: {:?}", bc);
-		})
-	} else {
-		Box::new(|| {
-			// TODO: find by args in the fs
-		})
-	};
-
-	use libra::libra_types::account_address::AccountAddress;
-	// net::get(AccountAddress::random(), &"Foo", opts.output)
-
-	let mut deps = deps::offline::OfflineDependencySearch::new_from_opts(&opts.input.offline);
-
-	let mut dg = deps::index::DependencyIndex::default();
-	deps.into_load_all()
-	   //  .map(|(k, v)| (k, v.map(disasm::deserialize_module)))
-	    .for_each(|(k, v)| {
-		    match v {
-
-			    Ok(bytes) => dg.insert_file(k, bytes),
-		       Err(err) => error!("Unable to load {} : {}", k.as_path().display(), err),
-		    }
-	    });
-	dg.build_deps_links();
-
-	get_dependency();
+	// TODO: to be continued.
 }
 
+fn read_input(opts: &cli::Opts) -> (MoveType, CompiledMove, Vec<DependencyMapKey>) {
+	let bytes = std::fs::read(&opts.input.path).expect("Unable to read input bytecode");
 
-fn get_dependency_net() {}
+	let source_type = match opts.input.offline.kind {
+		InputType::Script => MoveType::Script,
+		InputType::Module => MoveType::Module,
+		InputType::Auto => {
+			let t = if disasm::is_script(&bytes) {
+				MoveType::Script
+			} else {
+				MoveType::Module
+			};
+			info!("input type auto detected: {:?}", t);
+			t
+		},
+	};
+	let input = disasm::CompiledMove::deserialize(&bytes).expect("Input bytecode can't be deserialized");
+	let deps = disasm::deserialize_deps(&input);
+	debug!(
+	       "input.deps: {}",
+	       deps.iter()
+	           .map(|(a, n)| format!("{}.{}", a, n))
+	           .collect::<Vec<_>>()
+	           .join(", ")
+	);
+
+	(source_type, input, deps)
+}
+
+fn read_offline_deps(opts: &cli::Opts) -> DependencyMap {
+	let mut index = DependencyMap::default();
+	let deps = deps::offline::OfflineDependencySearch::new_from_opts(&opts.input.offline);
+	deps.into_load_all().for_each(|(k, v)| {
+		                    match v {
+			                    Ok(bytes) => index.insert_file(k, bytes),
+		                       Err(err) => error!("Unable to load {} : {}", k.as_path().display(), err),
+		                    }
+	                    });
+	index.build_deps_links();
+	index
+}

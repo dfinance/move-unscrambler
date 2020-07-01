@@ -74,6 +74,11 @@ impl std::str::FromStr for OutputFmt {
 
 #[derive(Clap, Debug)]
 pub struct Input {
+	// TODO: /// Input file path of 0x-address
+	/// Input bytecode-file path.
+	#[clap(short = "i", long = "input", name = "input file")]
+	pub path: PathBuf,
+
 	#[clap(flatten)]
 	pub online: InputNet,
 
@@ -87,14 +92,9 @@ pub struct Input {
 
 #[derive(Clap, Debug)]
 pub struct InputFs {
-	// TODO: /// Input file path of 0x-address
-	/// Input bytecode-file path.
-	#[clap(short = "i", long = "input", name = "input file")]
-	pub path: PathBuf,
-
 	/// Sets type for main input bytecode-file to script or module.
-	#[clap(long, possible_values = &MoveKind::ALL_OPTIONS, default_value = MoveKind::DEFAULT)]
-	pub kind: MoveKind,
+	#[clap(long, possible_values = &InputType::ALL_OPTIONS, default_value = InputType::DEFAULT)]
+	pub kind: InputType,
 
 	/// Dependencies search directory path.
 	/// Can be used multiple times.
@@ -124,15 +124,14 @@ pub struct InputNet {
 	pub ds: Option<String /* TODO: use http::Uri */>,
 }
 
-
 #[derive(Clap, Debug)]
-pub enum MoveKind {
+pub enum InputType {
 	Script,
 	Module,
 	Auto,
 }
 
-impl MoveKind {
+impl InputType {
 	const DEFAULT: &'static str = Self::AUTO;
 	const SCRIPT: &'static str = "script";
 	const MODULE: &'static str = "module";
@@ -140,7 +139,7 @@ impl MoveKind {
 	const ALL_OPTIONS: [&'static str; 3] = [Self::AUTO, Self::SCRIPT, Self::MODULE];
 }
 
-impl std::str::FromStr for MoveKind {
+impl std::str::FromStr for InputType {
 	type Err = String;
 
 	fn from_str(s: &str) -> Result<Self, Self::Err> {

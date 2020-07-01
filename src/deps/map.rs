@@ -8,27 +8,27 @@ use crate::disasm;
 // TODO: make/fill DependencyIndex from offline::OfflineDependencySearch
 
 
-pub type IndexKey = (AccountAddress, /* name: */ String);
+pub type DependencyMapKey = (AccountAddress, /* name: */ String);
 
 
 #[derive(Default)]
-pub struct DependencyIndex {
+pub struct DependencyMap {
 	// key: (AccountAddress, name:String)
 	// val: (opt<fs-path>, bc, meta: { script/mod,  })
-	map: HashMap<IndexKey, DependencyInfo>,
+	map: HashMap<DependencyMapKey, DependencyInfo>,
 }
 
 pub struct DependencyInfo {
 	source: DependencySource,
 	bytecode: CompiledModule,
-	dependencies: Vec<IndexKey>,
+	dependencies: Vec<DependencyMapKey>,
 }
 
 impl DependencyInfo {
 	pub fn source(&self) -> &DependencySource { &self.source }
 	pub fn address(&self) -> &AccountAddress { self.bytecode.address() }
 	pub fn bytecode(&self) -> &CompiledModule { &self.bytecode }
-	pub fn dependencies(&self) -> &[IndexKey] { &self.dependencies[..] }
+	pub fn dependencies(&self) -> &[DependencyMapKey] { &self.dependencies[..] }
 }
 
 pub enum DependencySource {
@@ -42,14 +42,15 @@ impl<T: Into<PathBuf>> From<T> for DependencySource {
 }
 
 
-impl DependencyIndex {
+impl DependencyMap {
 	pub fn insert(&mut self, address: AccountAddress, name: String, info: DependencyInfo) {
 		self.map.insert((address, name), info);
 	}
 
 	pub fn insert_file(&mut self, file_path: PathBuf, bytes: Vec<u8>) {
-		trace!("insert: {}", file_path.as_path().display());
-		let m = disasm::deserialize_module(&bytes);
+		let m = disasm::deserialize_module(&bytes)
+		// TODO: catch error and then add error plug
+		.expect("Module can't be deserialized");
 		self.insert_mod(file_path, m);
 	}
 
@@ -57,7 +58,7 @@ impl DependencyIndex {
 		where Src: Into<DependencySource> {
 		let name = bytecode.name().to_string();
 		let address = bytecode.address().to_owned();
-		trace!("\t\t 0x{}.{}", address, name);
+		debug!("add 0x{}.{}", address, name);
 
 		let info = DependencyInfo { bytecode,
 		                            source: source.into(),
@@ -68,8 +69,9 @@ impl DependencyIndex {
 
 	pub fn build_deps_links(&mut self) {
 		for (key, info) in self.map.iter_mut() {
-			let deps = disasm::deserialize_module_handles(info.bytecode());
-			debug!("+deps for {}: {:#?}", key.1, deps);
+			let deps = disasm::deserialize_module_deps(info.bytecode());
+			debug!("{}.deps: {}", key.1, deps.iter() .map(|(a, n)| format!("{}.{}", a, n)) .collect::<Vec<_>>().join(", "));
+			info.dependencies = deps;
 		}
 	}
 }
