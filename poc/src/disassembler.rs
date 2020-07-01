@@ -741,16 +741,15 @@ impl<Location: Clone + Eq> Disassembler<Location> {
 		);
 		let name = self.source_mapper.bytecode.identifier_at(function_handle.name);
 		let return_ = self.source_mapper.bytecode.signature_at(function_handle.return_);
-		let ret_type: Vec<String> =
-			return_.0
-			       .iter()
-			       .cloned()
-			       .map(|sig_token| {
-				       let sig_tok_str =
+		let ret_type: Vec<String> = return_.0
+		                                   .iter()
+		                                   .cloned()
+		                                   .map(|sig_token| {
+			                                   let sig_tok_str =
 					       self.disassemble_sig_tok(sig_token, &function_source_map.type_parameters)?;
-				       Ok(sig_tok_str)
-			       })
-			       .collect::<Result<Vec<String>>>()?;
+			                                   Ok(sig_tok_str)
+		                                   })
+		                                   .collect::<Result<Vec<String>>>()?;
 		let parameters_sig = &self.source_mapper
 		                          .bytecode
 		                          .signature_at(function_handle.parameters);
@@ -810,16 +809,15 @@ impl<Location: Clone + Eq> Disassembler<Location> {
 		);
 		let name = self.source_mapper.bytecode.identifier_at(function_handle.name);
 		let return_ = self.source_mapper.bytecode.signature_at(function_handle.return_);
-		let ret_type: Vec<String> =
-			return_.0
-			       .iter()
-			       .cloned()
-			       .map(|sig_token| {
-				       let sig_tok_str =
+		let ret_type: Vec<String> = return_.0
+		                                   .iter()
+		                                   .cloned()
+		                                   .map(|sig_token| {
+			                                   let sig_tok_str =
 					       self.disassemble_sig_tok(sig_token, &function_source_map.type_parameters)?;
-				       Ok(sig_tok_str)
-			       })
-			       .collect::<Result<Vec<String>>>()?;
+			                                   Ok(sig_tok_str)
+		                                   })
+		                                   .collect::<Result<Vec<String>>>()?;
 		let parameters_sig = &self.source_mapper
 		                          .bytecode
 		                          .signature_at(function_handle.parameters);
