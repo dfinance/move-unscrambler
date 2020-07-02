@@ -3,6 +3,7 @@ use anyhow::{format_err, Result};
 pub use clap::Clap;
 
 mod logging;
+pub use logging::path_to_string;
 
 
 #[derive(Clap, Debug)]

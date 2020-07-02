@@ -70,6 +70,7 @@ mod console {
 
 #[cfg(any(feature = "env_logger", feature = "pretty_env_logger"))]
 pub use logger::*;
+use std::path::Path;
 #[cfg(any(feature = "env_logger", feature = "pretty_env_logger"))]
 mod logger {
 	// TODO: init pretty_env_logger when interactive tty only
@@ -98,5 +99,19 @@ mod logger {
 	fn print_intro_message<T>(v: T) -> T {
 		debug!("Debug logging enabled. Happy debugging!");
 		v
+	}
+}
+
+
+pub fn path_to_string<P: AsRef<Path>>(path: P) -> String {
+	use std::env::current_dir;
+	let p: &Path = path.as_ref();
+	if p.is_absolute() {
+		current_dir().and_then(|pb| p.strip_prefix(pb).or_else(|_| Ok(p)))
+		             .unwrap()
+		             .display()
+		             .to_string()
+	} else {
+		p.display().to_string()
 	}
 }

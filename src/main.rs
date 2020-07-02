@@ -16,7 +16,7 @@ mod analyse;
 mod output;
 
 use anyhow::{bail, format_err, Result};
-use cli::InputType;
+use cli::{path_to_string, InputType};
 use disasm::MoveType;
 use disasm::CompiledMove;
 use deps::map::DependencyMap;
@@ -126,7 +126,7 @@ fn read_offline_deps(opts: &cli::Opts) -> DependencyMap {
 	deps.into_load_all().for_each(|(k, v)| {
 		                    match v {
 			                    Ok(bytes) => index.insert_file(k, bytes),
-		                       Err(err) => error!("Unable to load {} : {}", k.as_path().display(), err),
+		                       Err(err) => error!("Unable to load {} : {}", path_to_string(&k), err),
 		                    }
 	                    });
 	index.build_deps_links();
