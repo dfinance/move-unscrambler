@@ -12,13 +12,40 @@ pub struct Opts {
 }
 
 
-fn log_level_from_num(level: u8) -> Level {
+fn log_level_from_num(level: u8) -> String {
+	let self_level = self_log_level_from_num(level);
+	let deps_level = deps_log_level_from_num(level);
+	let prefered = std::env::var("RUST_LOG").unwrap_or_default();
+
+	#[rustfmt::skip]
+	let self_filters = [
+			env!("CARGO_PKG_NAME"),
+			&env!("CARGO_PKG_NAME").replace("-", "_")
+		].join(&format!("={},", self_level)) + &format!("={}", self_level);
+
+	format!(
+	        "{deps_level},{self_filters},{prefered}",
+	        self_filters = self_filters,
+	        deps_level = deps_level,
+	        prefered = prefered,
+	)
+}
+
+fn self_log_level_from_num(level: u8) -> Level {
 	match level {
 		0 => Info,
 		1 => Debug,
 		2 | _ => Trace,
-		// TODO: 3 => enable trace-level for network deps such as tokio, hyper.
-		// TODO: 4 => enable trace-level for low-level deps such as mio.
+	}
+}
+
+fn deps_log_level_from_num(level: u8) -> Level {
+	match level {
+		0 => Info,
+		1 => Info,
+		2 => Info,
+		3 => Debug,
+		4 | _ => Trace,
 	}
 }
 

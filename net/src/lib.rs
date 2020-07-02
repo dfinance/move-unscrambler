@@ -24,7 +24,7 @@ pub fn get<S>(addr: &AccountAddress, name: impl Into<Box<str>>, cfg: &NetCfg<S>)
 	if resp.status().is_success() {
 		let res: LoaderResponse = resp.json()?;
 		if res.result.value.is_empty() {
-			Err(anyhow!("Dependencies not found"))
+			Err(anyhow!("Bytecode value not found or empty"))
 		} else {
 			Ok(hex::decode(&res.result.value)?)
 		}

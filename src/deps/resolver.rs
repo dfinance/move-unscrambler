@@ -31,7 +31,7 @@ impl DependencyResolverMap {
 		    .filter_map(|s| {
 			    s.search(addr, name)
 			     .map_err(|err| {
-				     warn!("mod 0x{}:{} not found, {}", addr, name, err);
+				     warn!("Module 0x{}:{} not found, Err: '{}'", addr, name, err);
 			     })
 			     .ok()
 		    })
