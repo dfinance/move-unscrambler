@@ -27,7 +27,7 @@ pub fn deserialize_script<T: AsRef<[u8]>>(bytecode: T) -> BinaryLoaderResult<Com
 	CompiledScript::deserialize(bytecode.as_ref())
 }
 
-pub fn deserialize_any<T: AsRef<[u8]>>(bytecode: T) -> BinaryLoaderResult<uni::CompiledMove> {
+pub fn deserialize<T: AsRef<[u8]>>(bytecode: T) -> BinaryLoaderResult<uni::CompiledMove> {
 	uni::CompiledMove::deserialize(bytecode.as_ref())
 }
 

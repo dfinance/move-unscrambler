@@ -1,11 +1,8 @@
 use std::path::{Path, PathBuf};
-use std::collections::HashMap;
+use std::{hash::Hash, collections::HashMap, borrow::Borrow};
 use libra::{vm::CompiledModule, libra_types::account_address::AccountAddress};
 use libra::{move_core_types::identifier::IdentStr, vm::access::ModuleAccess};
 use crate::disasm;
-
-
-// TODO: make/fill DependencyIndex from offline::OfflineDependencySearch
 
 
 pub type DependencyMapKey = (AccountAddress, /* name: */ String);
@@ -42,6 +39,7 @@ impl DependencyInfo {
 	pub fn dependencies_mut(&mut self) -> &mut [DependencyMapKey] { &mut self.dependencies[..] }
 }
 
+#[derive(Debug, Clone)]
 pub enum DependencySource {
 	Fs(PathBuf),
 	Net,
@@ -63,6 +61,16 @@ impl DependencyMap {
 		// TODO: catch error and then add error plug
 		.expect("Module can't be deserialized");
 		self.insert_mod(file_path, m);
+	}
+
+	pub fn insert_mod_bin<Src>(&mut self, source: Src, bytes: Vec<u8>)
+		where Src: Into<DependencySource> {
+		let source = source.into();
+		debug!("inserting {} bytes by {:?}", bytes.len(), source);
+		let m = disasm::deserialize_module(&bytes)
+		// TODO: catch error and then add error plug
+		.expect("Module can't be deserialized");
+		self.insert_mod(source, m);
 	}
 
 	pub fn insert_mod<Src>(&mut self, source: Src, bytecode: CompiledModule)
@@ -87,3 +95,25 @@ impl DependencyMap {
 		}
 	}
 }
+
+
+pub trait MapAccess<K, V>
+	where K: Hash + Eq {
+	// type Hasher = std::collections::hash_map::RandomState;
+
+	fn as_map(&self) -> &HashMap<K, V>;
+	fn as_map_mut(&mut self) -> &mut HashMap<K, V>;
+}
+
+
+impl MapAccess<DependencyMapKey, DependencyInfo> for DependencyMap {
+	fn as_map(&self) -> &HashMap<DependencyMapKey, DependencyInfo> { &self.map }
+	fn as_map_mut(&mut self) -> &mut HashMap<DependencyMapKey, DependencyInfo> { &mut self.map }
+}
+
+// impl<K, V, T> AsRef<HashMap<K, V>> for T where T: MapAccess<K, V> {
+// 	fn as_ref(&self) -> &HashMap<K, V> {}
+// }
+// impl<K, V> AsRef<HashMap<K, V>> for dyn MapAccess<K, V> {
+// 	fn as_ref(&self) -> &HashMap<K, V> {}
+// }

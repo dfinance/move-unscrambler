@@ -74,8 +74,20 @@ fn validate_config(mut opts: cli::Opts) -> Result<cli::Opts> {
 
 fn run(opts: cli::Opts) {
 	let (input_type, input, input_deps) = read_input(&opts);
-	let mut deps = read_offline_deps(&opts);
-	// TODO: add online deps-resolver into the (or wrap it) DependencyMap (deps)
+	let deps = read_offline_deps(&opts);
+
+	// create online deps-resolver(s), resolve all deps in DependencyMap recursively, then destroy.
+	let mut deps = if !opts.input.online.offline {
+		use deps::online::*;
+		let link = deps::online::OnlineDependencySearch::with_opts(&opts.input.online);
+		let mut resolver = deps::resolver::DependencyResolverMap::new(deps);
+		resolver.add_searcher(link);
+		resolver.prefetch_deps(&input_deps);
+		resolver.prefetch_deps_recursively();
+		resolver.into_map()
+	} else {
+		deps
+	};
 
 	// TODO: to be continued.
 }
