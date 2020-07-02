@@ -1,7 +1,7 @@
 use std::path::{Path, PathBuf};
 use std::collections::HashMap;
 use libra::{vm::CompiledModule, libra_types::account_address::AccountAddress};
-use libra::vm::access::ModuleAccess;
+use libra::{move_core_types::identifier::IdentStr, vm::access::ModuleAccess};
 use crate::disasm;
 
 
@@ -13,9 +13,18 @@ pub type DependencyMapKey = (AccountAddress, /* name: */ String);
 
 #[derive(Default)]
 pub struct DependencyMap {
-	// key: (AccountAddress, name:String)
-	// val: (opt<fs-path>, bc, meta: { script/mod,  })
+	// TODO: extend me here
 	map: HashMap<DependencyMapKey, DependencyInfo>,
+}
+
+impl DependencyMap {
+	pub fn mods_at_address(&self,
+	                       addr: &AccountAddress)
+	                       -> impl Iterator<Item = (&DependencyMapKey, &DependencyInfo)>
+	{
+		let addr = addr.clone();
+		self.map.iter().filter(move |((a, _), _)| *a == addr).map(|a| a)
+	}
 }
 
 pub struct DependencyInfo {
@@ -26,9 +35,11 @@ pub struct DependencyInfo {
 
 impl DependencyInfo {
 	pub fn source(&self) -> &DependencySource { &self.source }
+	pub fn name(&self) -> &IdentStr { self.bytecode.name() }
 	pub fn address(&self) -> &AccountAddress { self.bytecode.address() }
 	pub fn bytecode(&self) -> &CompiledModule { &self.bytecode }
 	pub fn dependencies(&self) -> &[DependencyMapKey] { &self.dependencies[..] }
+	pub fn dependencies_mut(&mut self) -> &mut [DependencyMapKey] { &mut self.dependencies[..] }
 }
 
 pub enum DependencySource {
