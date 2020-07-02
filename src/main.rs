@@ -12,7 +12,7 @@ mod cli;
 // mod cfg;
 mod deps;
 mod disasm;
-mod analyze;
+mod analyse;
 mod output;
 
 use anyhow::{bail, format_err, Result};
@@ -89,7 +89,11 @@ fn run(opts: cli::Opts) {
 		deps
 	};
 
-	// TODO: to be continued.
+	// TODO: knoleges
+
+	// TODO: analyze
+
+	// TODO: render
 }
 
 fn read_input(opts: &cli::Opts) -> (MoveType, CompiledMove, Vec<DependencyMapKey>) {

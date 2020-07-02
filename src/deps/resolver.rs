@@ -1,5 +1,3 @@
-// TODO: make/fill DependencyIndex from offline::OfflineDependencySearch
-
 use std::{collections::HashMap, cell::RefCell};
 use libra::libra_types::account_address::AccountAddress;
 use super::map::{DependencyMapKey, DependencyMap, MapAccess, DependencyInfo, DependencySource};

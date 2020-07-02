@@ -110,10 +110,3 @@ impl MapAccess<DependencyMapKey, DependencyInfo> for DependencyMap {
 	fn as_map(&self) -> &HashMap<DependencyMapKey, DependencyInfo> { &self.map }
 	fn as_map_mut(&mut self) -> &mut HashMap<DependencyMapKey, DependencyInfo> { &mut self.map }
 }
-
-// impl<K, V, T> AsRef<HashMap<K, V>> for T where T: MapAccess<K, V> {
-// 	fn as_ref(&self) -> &HashMap<K, V> {}
-// }
-// impl<K, V> AsRef<HashMap<K, V>> for dyn MapAccess<K, V> {
-// 	fn as_ref(&self) -> &HashMap<K, V> {}
-// }
