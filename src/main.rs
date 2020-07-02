@@ -39,7 +39,7 @@ fn validate_config(mut opts: cli::Opts) -> Result<cli::Opts> {
 	use std::fs::create_dir_all;
 	use std::fs::canonicalize;
 
-	opts.input.path = canonicalize(&opts.input.path)?;
+	opts.input.offline.path = canonicalize(&opts.input.offline.path)?;
 
 	for dep in opts.input.offline.dependencies.iter_mut() {
 		*dep = canonicalize(&dep)?;
@@ -97,7 +97,7 @@ fn run(opts: cli::Opts) {
 }
 
 fn read_input(opts: &cli::Opts) -> (MoveType, CompiledMove, Vec<DependencyMapKey>) {
-	let bytes = std::fs::read(&opts.input.path).expect("Unable to read input bytecode");
+	let bytes = std::fs::read(&opts.input.offline.path).expect("Unable to read input bytecode");
 
 	let source_type = match opts.input.offline.kind {
 		InputType::Script => MoveType::Script,

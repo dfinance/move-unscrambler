@@ -75,11 +75,6 @@ impl std::str::FromStr for OutputFmt {
 
 #[derive(Clap, Debug)]
 pub struct Input {
-	// TODO: /// Input file path of 0x-address
-	/// Input bytecode-file path.
-	#[clap(short = "i", long = "input", name = "input file")]
-	pub path: PathBuf,
-
 	#[clap(flatten)]
 	pub online: InputNet,
 
@@ -93,6 +88,10 @@ pub struct Input {
 
 #[derive(Clap, Debug)]
 pub struct InputFs {
+	/// Input bytecode-file path.
+	#[clap(short = "i", long = "input", name = "input file")]
+	pub path: PathBuf,
+
 	/// Sets type for main input bytecode-file to script or module.
 	#[clap(long, possible_values = &InputType::ALL_OPTIONS, default_value = InputType::DEFAULT)]
 	pub kind: InputType,

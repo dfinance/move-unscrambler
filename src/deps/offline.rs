@@ -1,4 +1,5 @@
 extern crate walkdir;
+use crate::cli::path_to_string;
 use walkdir::{DirEntry, WalkDir};
 use std::path::{PathBuf, Path};
 use std::io::{Result, Error};
@@ -14,6 +15,7 @@ pub struct OfflineDependencySearch {
 	search_path: Vec<PathBuf>,
 	files_primary: Vec<PathBuf>,
 	files_secondary: Vec<PathBuf>,
+	files_exclude: Vec<PathBuf>,
 }
 
 impl OfflineDependencySearch {
@@ -25,6 +27,7 @@ impl OfflineDependencySearch {
 
 	pub fn new_from_opts(opts: &crate::cli::InputFs) -> Self {
 		let mut deps = Self::new(opts.search_recursive, opts.follow_symlinks);
+		deps.files_exclude = vec![opts.path.to_owned()];
 		opts.dependencies.iter().for_each(|d| {
 			                        match d.extension().map(|s| s.to_str()).flatten() {
 				                        Some(MOVE_BIN_EXT) => deps.add_search_file(d),
@@ -45,7 +48,7 @@ impl OfflineDependencySearch {
 
 	fn add_search_dir_recursive<T>(&mut self, path: T)
 		where T: Into<PathBuf> + AsRef<Path> {
-		debug!("adding search dir recursively {}", path.as_ref().display());
+		debug!("adding search dir recursively {}", path_to_string(&path));
 
 		let root = path.into();
 		self.search_path.push(root.clone());
@@ -69,7 +72,7 @@ impl OfflineDependencySearch {
 			                  // prevent cycles on symlinks:
 			                  if !self.search_path.contains(&sub_buf) {
 				                  self.search_path.push(sub_buf);
-				                  trace!("added search dir: {}", sub.display());
+				                  trace!("added search dir: {}", path_to_string(&sub));
 
 				                  // add found files for secondary search level
 				                  if let Ok(dir) = fs::read_dir(entry.path()) {
@@ -92,8 +95,13 @@ impl OfflineDependencySearch {
 
 	pub fn add_search_file<T>(&mut self, path: T)
 		where T: Into<PathBuf> + AsRef<Path> {
-		trace!("added dep bin: {}", path.as_ref().display());
-		self.files_primary.push(path.into());
+		let pathbuf = path.into();
+		if !self.files_exclude.contains(&pathbuf) {
+			trace!("add dep bin: {}", path_to_string(&pathbuf));
+			self.files_primary.push(pathbuf);
+		} else {
+			trace!("skip add because excluded: {}", path_to_string(&pathbuf));
+		}
 	}
 }
 
