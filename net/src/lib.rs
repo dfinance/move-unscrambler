@@ -23,7 +23,11 @@ pub fn get<S>(addr: &AccountAddress, name: impl Into<Box<str>>, cfg: &NetCfg<S>)
 	let resp = reqwest::blocking::get(&url)?;
 	if resp.status().is_success() {
 		let res: LoaderResponse = resp.json()?;
-		Ok(hex::decode(&res.result.value)?)
+		if res.result.value.is_empty() {
+			Err(anyhow!("Dependencies not found"))
+		} else {
+			Ok(hex::decode(&res.result.value)?)
+		}
 	} else {
 		let res: LoaderErrorResponse = resp.json()?;
 		Err(anyhow!("Failed to load dependencies :'{}' [{}]", url, res.error))
