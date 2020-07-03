@@ -14,6 +14,7 @@ mod deps;
 mod disasm;
 mod analyze;
 mod output;
+mod reachability;
 
 use anyhow::{bail, format_err, Result};
 use cli::InputType;
