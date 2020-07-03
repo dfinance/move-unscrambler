@@ -7,3 +7,4 @@ pub extern crate move_core_types;
 pub extern crate move_ir_types;
 pub extern crate vm;
 pub extern crate move_coverage;
+pub extern crate move_lang;

@@ -16,6 +16,7 @@ move-core-types = { package = "move-core-types", git = "https://github.com/libra
 move-ir-types = { package = "move-ir-types", git = "https://github.com/libra/libra.git", rev = "6190f23a37cd4c4f9e4b4ecf1eb650265c03429c" }
 move-coverage = { package = "move-coverage", git = "https://github.com/libra/libra.git", rev = "6190f23a37cd4c4f9e4b4ecf1eb650265c03429c" }
 vm = { package = "vm", git = "https://github.com/libra/libra.git", rev = "6190f23a37cd4c4f9e4b4ecf1eb650265c03429c" }
+move-lang = { git = "https://github.com/libra/libra.git", rev = "6190f23a37cd4c4f9e4b4ecf1eb650265c03429c" }
 
 # bytecode-verifier = { package = "bytecode-verifier", git = "https://github.com/dfinance/libra.git" }
 # bytecode-source-map = { package = "bytecode-source-map", git = "https://github.com/dfinance/libra.git" }
