@@ -28,6 +28,7 @@ use types::ModAddr;
 use types::ModAddrTuple;
 use extract::prelude::*;
 use output::utils::path_to_string;
+use crate::extract::struct_map::extract_struct_map;
 
 
 fn main() {
@@ -87,9 +88,15 @@ fn run(opts: cli::Opts) {
 	let (input_type, input, input_deps) = read_input(&opts);
 	let (deps, missed_deps) = read_deps(&opts.input, &input_deps);
 
+	if let CompiledMove::Module(compiled_mod) = input {
+		let input_struct_map = extract_struct_map(&compiled_mod);
+		dbg!(input_struct_map);
+	}
 
-	// TODO: extract
-
+	for (mod_addr, mod_info) in deps {
+		let struct_map = extract_struct_map(mod_info.bytecode());
+		dbg!(struct_map);
+	}
 
 	// TODO: knoleges
 

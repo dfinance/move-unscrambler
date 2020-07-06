@@ -37,5 +37,3 @@ pub trait ExtractMut<T> {
 pub trait ExtractWith<T, K> {
 	fn extract_with(&self, other: K) -> T;
 }
-
-
