@@ -21,16 +21,20 @@ pub mod prelude {
 }
 
 
+pub trait Extract<T> {
+	fn extract(&self) -> T;
+}
+
 pub trait ExtractRef<T> {
 	fn extract_ref(&self) -> &T;
 }
 
 pub trait ExtractMut<T> {
-	fn extract_mut(&self) -> &mut T;
+	fn extract_mut(&mut self) -> &mut T;
 }
 
-pub trait Extract<T> {
-	fn extract(&self) -> T;
+pub trait ExtractWith<T, K> {
+	fn extract_with(&self, other: K) -> T;
 }
 
 
