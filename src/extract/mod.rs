@@ -13,6 +13,7 @@ use crate::types::*;
 pub mod mod_addr;
 pub mod mod_handles;
 pub mod fn_handles;
+pub mod struct_map;
 
 pub mod prelude {
 	pub use super::{Extract, ExtractRef, ExtractMut};
