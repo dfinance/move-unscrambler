@@ -1,9 +1,9 @@
 extern crate walkdir;
-use crate::cli::path_to_string;
 use walkdir::{DirEntry, WalkDir};
 use std::path::{PathBuf, Path};
 use std::io::{Result, Error};
 use std::fs;
+use crate::output::utils::path_to_string;
 
 
 const MOVE_BIN_EXT: &str = "mv";
@@ -40,10 +40,35 @@ impl OfflineDependencySearch {
 	pub fn add_search_dir<T>(&mut self, path: T)
 		where T: Into<PathBuf> + AsRef<Path> {
 		if !self.recursive {
+			self.add_files_from_dir(&path);
 			self.search_path.push(path.into());
 		} else {
 			self.add_search_dir_recursive(path.into());
 		}
+	}
+
+	fn add_files_from_dir<T: AsRef<Path>>(&mut self, path: T) {
+		use std::fs::canonicalize;
+		let mut add_secondary = Vec::new();
+
+		if let Ok(dir) = fs::read_dir(path) {
+			dir.filter_map(|e| e.ok())
+				// filter .move files only
+				.filter(|p| matches!(p.path().extension().map(|s| s.to_str()).flatten(), Some(MOVE_BIN_EXT)))
+				// prevent duplicates
+				.filter(|p| !self.files_primary.contains(&p.path()))
+				.filter(|p| !self.files_secondary.contains(&p.path()))
+				.filter(|p| !self.files_exclude.contains(&p.path()))
+				.filter_map(|p| canonicalize(p.path()).ok())
+				.for_each(|f| {
+					add_secondary.push(f)
+				});
+		}
+
+		// finally dedup & push:
+		add_secondary.sort();
+		add_secondary.dedup();
+		self.files_secondary.extend(add_secondary);
 	}
 
 	fn add_search_dir_recursive<T>(&mut self, path: T)
@@ -51,6 +76,7 @@ impl OfflineDependencySearch {
 		debug!("adding search dir recursively {}", path_to_string(&path));
 
 		let root = path.into();
+		self.add_files_from_dir(root.as_path());
 		self.search_path.push(root.clone());
 
 		let is_allowed = |entry: &DirEntry| {
@@ -61,7 +87,6 @@ impl OfflineDependencySearch {
 			      .unwrap_or(false)
 		};
 
-		let mut add_secondary = Vec::new();
 		WalkDir::new(root).follow_links(self.follow_symlinks)
 		                  .into_iter()
 		                  .filter_entry(is_allowed)
@@ -73,24 +98,15 @@ impl OfflineDependencySearch {
 			                  if !self.search_path.contains(&sub_buf) {
 				                  self.search_path.push(sub_buf);
 				                  trace!("added search dir: {}", path_to_string(&sub));
-
 				                  // add found files for secondary search level
-				                  if let Ok(dir) = fs::read_dir(entry.path()) {
-					                  dir.filter_map(|e| e.ok())
-					                     // filter .move files only
-					                     .filter(|p| matches!(p.path().extension().map(|s| s.to_str()).flatten(), Some(MOVE_BIN_EXT)))
-					                     // prevent duplicates
-					                     .filter(|p| !self.files_primary.contains(&p.path()))
-					                     .filter(|p| !self.files_secondary.contains(&p.path()))
-					                     .for_each(|f| add_secondary.push(f.path()));
-				                  }
+				                  self.add_files_from_dir(sub);
 			                  }
 		                  });
 
-		// finally dedup & push:
-		add_secondary.sort();
-		add_secondary.dedup();
-		self.files_secondary.extend(add_secondary);
+		{
+			// INSTEAD OF - just call self.add_files_from_dir(path) for each search-path
+			// self.add_files_from_dir(path)
+		}
 	}
 
 	pub fn add_search_file<T>(&mut self, path: T)
@@ -100,7 +116,7 @@ impl OfflineDependencySearch {
 			trace!("add dep bin: {}", path_to_string(&pathbuf));
 			self.files_primary.push(pathbuf);
 		} else {
-			trace!("skip add because excluded: {}", path_to_string(&pathbuf));
+			trace!("skip because already added: {}", path_to_string(&pathbuf));
 		}
 	}
 }

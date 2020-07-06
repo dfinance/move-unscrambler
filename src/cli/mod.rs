@@ -3,7 +3,6 @@ use anyhow::{format_err, Result};
 pub use clap::Clap;
 
 mod logging;
-pub use logging::path_to_string;
 
 
 #[derive(Clap, Debug)]
@@ -118,10 +117,11 @@ pub struct InputNet {
 	pub offline: bool,
 
 	/// Sets URI to shared data-source.
+	/// Can be used multiple times.
 	/// Used to resolve dependencies online by shared node.
 	/// Can be disabled by pass --offline flag.
 	#[clap(long = "data-source", name = "URI")]
-	pub ds: Option<String /* TODO: use http::Uri */>,
+	pub ds: Vec<String /* TODO: use http::Uri */>,
 }
 
 #[derive(Clap, Debug)]

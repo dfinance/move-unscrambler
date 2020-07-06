@@ -1,14 +1,15 @@
-use std::ops::{Deref, DerefMut};
 use libra::vm::file_format::CompiledScript;
 use libra::vm::CompiledModule;
 use libra::vm::errors::BinaryLoaderResult;
 use super::{deserialize_module, deserialize_script};
 
+#[derive(Debug)]
 pub enum CompiledMove {
 	Script(CompiledScript),
 	Module(CompiledModule),
 }
 
+#[derive(Debug, Clone)]
 pub enum CompiledMoveRef<'a> {
 	Script(&'a CompiledScript),
 	Module(&'a CompiledModule),
@@ -20,6 +21,14 @@ impl From<CompiledScript> for CompiledMove {
 
 impl From<CompiledModule> for CompiledMove {
 	fn from(b: CompiledModule) -> Self { CompiledMove::Module(b) }
+}
+
+impl<'a> From<&'a CompiledScript> for CompiledMoveRef<'a> {
+	fn from(b: &'a CompiledScript) -> Self { CompiledMoveRef::Script(b) }
+}
+
+impl<'a> From<&'a CompiledModule> for CompiledMoveRef<'a> {
+	fn from(b: &'a CompiledModule) -> Self { CompiledMoveRef::Module(b) }
 }
 
 impl CompiledMove {
@@ -50,6 +59,7 @@ impl<'a> CompiledMoveRef<'a> {
 }
 
 
+pub use access::*;
 mod access {
 	use super::*;
 	use libra::libra_types::account_address::AccountAddress;
@@ -69,6 +79,13 @@ mod access {
 
 	/// Represents accessors for a compiled move binary.
 	pub trait MoveAccess: Sync {
+		fn is_script(&self) -> bool;
+		fn is_module(&self) -> bool;
+
+		fn name(&self) -> &IdentStr;
+		fn name_str(&self) -> &str;
+		fn address(&self) -> AccountAddress;
+
 		fn module_handle_at(&self, idx: ModuleHandleIndex) -> &ModuleHandle;
 		fn struct_handle_at(&self, idx: StructHandleIndex) -> &StructHandle;
 		fn function_handle_at(&self, idx: FunctionHandleIndex) -> &FunctionHandle;
@@ -87,120 +104,293 @@ mod access {
 		fn address_identifiers(&self) -> &[AccountAddress];
 	}
 
+	static DEFAULT_SCRIPT_NAME: &'static str = "script";
+	const DEFAULT_SCRIPT_ADDRESS: [u8; 16] = [255; 16];
+
 	impl MoveAccess for CompiledMove {
+		fn is_script(&self) -> bool { matches!(self, Self::Script(_)) }
+		fn is_module(&self) -> bool { matches!(self, Self::Module(_)) }
+
+
+		/// Returns the name of the module.
+		fn name(&self) -> &IdentStr {
+			match self {
+				Self::Script(_) => IdentStr::new(DEFAULT_SCRIPT_NAME).unwrap(),
+				Self::Module(b) => b.name(),
+			}
+		}
+
+		/// Returns the name of the module.
+		fn name_str(&self) -> &str {
+			match self {
+				Self::Script(_) => DEFAULT_SCRIPT_NAME,
+				Self::Module(b) => b.name().as_str(),
+			}
+		}
+
+		/// Returns the address of the module.
+		fn address(&self) -> AccountAddress {
+			match self {
+				Self::Script(_) => AccountAddress::new(DEFAULT_SCRIPT_ADDRESS),
+				Self::Module(b) => b.address().to_owned(),
+			}
+		}
+
+
 		fn module_handle_at(&self, idx: ModuleHandleIndex) -> &ModuleHandle {
 			match self {
-				CompiledMove::Script(b) => b.module_handle_at(idx),
-				CompiledMove::Module(b) => b.module_handle_at(idx),
+				Self::Script(b) => b.module_handle_at(idx),
+				Self::Module(b) => b.module_handle_at(idx),
 			}
 		}
 
 		fn struct_handle_at(&self, idx: StructHandleIndex) -> &StructHandle {
 			match self {
-				CompiledMove::Script(b) => b.struct_handle_at(idx),
-				CompiledMove::Module(b) => b.struct_handle_at(idx),
+				Self::Script(b) => b.struct_handle_at(idx),
+				Self::Module(b) => b.struct_handle_at(idx),
 			}
 		}
 
 		fn function_handle_at(&self, idx: FunctionHandleIndex) -> &FunctionHandle {
 			match self {
-				CompiledMove::Script(b) => b.function_handle_at(idx),
-				CompiledMove::Module(b) => b.function_handle_at(idx),
+				Self::Script(b) => b.function_handle_at(idx),
+				Self::Module(b) => b.function_handle_at(idx),
 			}
 		}
 
 		fn function_instantiation_at(&self, idx: FunctionInstantiationIndex) -> &FunctionInstantiation {
 			match self {
-				CompiledMove::Script(b) => b.function_instantiation_at(idx),
-				CompiledMove::Module(b) => b.function_instantiation_at(idx),
+				Self::Script(b) => b.function_instantiation_at(idx),
+				Self::Module(b) => b.function_instantiation_at(idx),
 			}
 		}
 
-
 		fn signature_at(&self, idx: SignatureIndex) -> &Signature {
 			match self {
-				CompiledMove::Script(b) => b.signature_at(idx),
-				CompiledMove::Module(b) => b.signature_at(idx),
+				Self::Script(b) => b.signature_at(idx),
+				Self::Module(b) => b.signature_at(idx),
 			}
 		}
 
 		fn identifier_at(&self, idx: IdentifierIndex) -> &IdentStr {
 			match self {
-				CompiledMove::Script(b) => b.identifier_at(idx),
-				CompiledMove::Module(b) => b.identifier_at(idx),
+				Self::Script(b) => b.identifier_at(idx),
+				Self::Module(b) => b.identifier_at(idx),
 			}
 		}
 
 		fn address_identifier_at(&self, idx: AddressIdentifierIndex) -> &AccountAddress {
 			match self {
-				CompiledMove::Script(b) => b.address_identifier_at(idx),
-				CompiledMove::Module(b) => b.address_identifier_at(idx),
+				Self::Script(b) => b.address_identifier_at(idx),
+				Self::Module(b) => b.address_identifier_at(idx),
 			}
 		}
 
 		fn constant_at(&self, idx: ConstantPoolIndex) -> &Constant {
 			match self {
-				CompiledMove::Script(b) => b.constant_at(idx),
-				CompiledMove::Module(b) => b.constant_at(idx),
+				Self::Script(b) => b.constant_at(idx),
+				Self::Module(b) => b.constant_at(idx),
 			}
 		}
 
-
 		fn module_handles(&self) -> &[ModuleHandle] {
 			match self {
-				CompiledMove::Script(b) => b.module_handles(),
-				CompiledMove::Module(b) => b.module_handles(),
+				Self::Script(b) => b.module_handles(),
+				Self::Module(b) => b.module_handles(),
 			}
 		}
 
 		fn struct_handles(&self) -> &[StructHandle] {
 			match self {
-				CompiledMove::Script(b) => b.struct_handles(),
-				CompiledMove::Module(b) => b.struct_handles(),
+				Self::Script(b) => b.struct_handles(),
+				Self::Module(b) => b.struct_handles(),
 			}
 		}
 
 		fn function_handles(&self) -> &[FunctionHandle] {
 			match self {
-				CompiledMove::Script(b) => b.function_handles(),
-				CompiledMove::Module(b) => b.function_handles(),
+				Self::Script(b) => b.function_handles(),
+				Self::Module(b) => b.function_handles(),
 			}
 		}
-
 
 		fn function_instantiations(&self) -> &[FunctionInstantiation] {
 			match self {
-				CompiledMove::Script(b) => b.function_instantiations(),
-				CompiledMove::Module(b) => b.function_instantiations(),
+				Self::Script(b) => b.function_instantiations(),
+				Self::Module(b) => b.function_instantiations(),
 			}
 		}
 
-
 		fn signatures(&self) -> &[Signature] {
 			match self {
-				CompiledMove::Script(b) => b.signatures(),
-				CompiledMove::Module(b) => b.signatures(),
+				Self::Script(b) => b.signatures(),
+				Self::Module(b) => b.signatures(),
 			}
 		}
 
 		fn constant_pool(&self) -> &[Constant] {
 			match self {
-				CompiledMove::Script(b) => b.constant_pool(),
-				CompiledMove::Module(b) => b.constant_pool(),
+				Self::Script(b) => b.constant_pool(),
+				Self::Module(b) => b.constant_pool(),
 			}
 		}
 
 		fn identifiers(&self) -> &[Identifier] {
 			match self {
-				CompiledMove::Script(b) => b.identifiers(),
-				CompiledMove::Module(b) => b.identifiers(),
+				Self::Script(b) => b.identifiers(),
+				Self::Module(b) => b.identifiers(),
 			}
 		}
 
 		fn address_identifiers(&self) -> &[AccountAddress] {
 			match self {
-				CompiledMove::Script(b) => b.address_identifiers(),
-				CompiledMove::Module(b) => b.address_identifiers(),
+				Self::Script(b) => b.address_identifiers(),
+				Self::Module(b) => b.address_identifiers(),
+			}
+		}
+	}
+
+
+	// impl<'a> MoveAccess for CompiledMoveRef<'a> {
+	impl MoveAccess for CompiledMoveRef<'_> {
+		fn is_script(&self) -> bool { matches!(self, Self::Script(_)) }
+		fn is_module(&self) -> bool { matches!(self, Self::Module(_)) }
+
+
+		/// Returns the name of the module.
+		fn name(&self) -> &IdentStr {
+			match self {
+				Self::Script(_) => IdentStr::new(DEFAULT_SCRIPT_NAME).unwrap(),
+				Self::Module(b) => b.name(),
+			}
+		}
+
+		/// Returns the name of the module.
+		fn name_str(&self) -> &str {
+			match self {
+				Self::Script(_) => DEFAULT_SCRIPT_NAME,
+				Self::Module(b) => b.name().as_str(),
+			}
+		}
+
+		/// Returns the address of the module.
+		fn address(&self) -> AccountAddress {
+			match self {
+				Self::Script(_) => AccountAddress::new(DEFAULT_SCRIPT_ADDRESS),
+				Self::Module(b) => b.address().to_owned(),
+			}
+		}
+
+
+		fn module_handle_at(&self, idx: ModuleHandleIndex) -> &ModuleHandle {
+			match self {
+				Self::Script(b) => b.module_handle_at(idx),
+				Self::Module(b) => b.module_handle_at(idx),
+			}
+		}
+
+		fn struct_handle_at(&self, idx: StructHandleIndex) -> &StructHandle {
+			match self {
+				Self::Script(b) => b.struct_handle_at(idx),
+				Self::Module(b) => b.struct_handle_at(idx),
+			}
+		}
+
+		fn function_handle_at(&self, idx: FunctionHandleIndex) -> &FunctionHandle {
+			match self {
+				Self::Script(b) => b.function_handle_at(idx),
+				Self::Module(b) => b.function_handle_at(idx),
+			}
+		}
+
+		fn function_instantiation_at(&self, idx: FunctionInstantiationIndex) -> &FunctionInstantiation {
+			match self {
+				Self::Script(b) => b.function_instantiation_at(idx),
+				Self::Module(b) => b.function_instantiation_at(idx),
+			}
+		}
+
+		fn signature_at(&self, idx: SignatureIndex) -> &Signature {
+			match self {
+				Self::Script(b) => b.signature_at(idx),
+				Self::Module(b) => b.signature_at(idx),
+			}
+		}
+
+		fn identifier_at(&self, idx: IdentifierIndex) -> &IdentStr {
+			match self {
+				Self::Script(b) => b.identifier_at(idx),
+				Self::Module(b) => b.identifier_at(idx),
+			}
+		}
+
+		fn address_identifier_at(&self, idx: AddressIdentifierIndex) -> &AccountAddress {
+			match self {
+				Self::Script(b) => b.address_identifier_at(idx),
+				Self::Module(b) => b.address_identifier_at(idx),
+			}
+		}
+
+		fn constant_at(&self, idx: ConstantPoolIndex) -> &Constant {
+			match self {
+				Self::Script(b) => b.constant_at(idx),
+				Self::Module(b) => b.constant_at(idx),
+			}
+		}
+
+		fn module_handles(&self) -> &[ModuleHandle] {
+			match self {
+				Self::Script(b) => b.module_handles(),
+				Self::Module(b) => b.module_handles(),
+			}
+		}
+
+		fn struct_handles(&self) -> &[StructHandle] {
+			match self {
+				Self::Script(b) => b.struct_handles(),
+				Self::Module(b) => b.struct_handles(),
+			}
+		}
+
+		fn function_handles(&self) -> &[FunctionHandle] {
+			match self {
+				Self::Script(b) => b.function_handles(),
+				Self::Module(b) => b.function_handles(),
+			}
+		}
+
+		fn function_instantiations(&self) -> &[FunctionInstantiation] {
+			match self {
+				Self::Script(b) => b.function_instantiations(),
+				Self::Module(b) => b.function_instantiations(),
+			}
+		}
+
+		fn signatures(&self) -> &[Signature] {
+			match self {
+				Self::Script(b) => b.signatures(),
+				Self::Module(b) => b.signatures(),
+			}
+		}
+
+		fn constant_pool(&self) -> &[Constant] {
+			match self {
+				Self::Script(b) => b.constant_pool(),
+				Self::Module(b) => b.constant_pool(),
+			}
+		}
+
+		fn identifiers(&self) -> &[Identifier] {
+			match self {
+				Self::Script(b) => b.identifiers(),
+				Self::Module(b) => b.identifiers(),
+			}
+		}
+
+		fn address_identifiers(&self) -> &[AccountAddress] {
+			match self {
+				Self::Script(b) => b.address_identifiers(),
+				Self::Module(b) => b.address_identifiers(),
 			}
 		}
 	}

@@ -11,16 +11,23 @@ extern crate clap;
 mod cli;
 // mod cfg;
 mod deps;
+mod types;
 mod disasm;
+mod extract;
 mod analyse;
 mod output;
 
 use anyhow::{bail, format_err, Result};
-use cli::{path_to_string, InputType};
-use disasm::MoveType;
+use cli::InputType;
 use disasm::CompiledMove;
-use deps::map::DependencyMap;
-use deps::map::DependencyMapKey;
+use deps::map::ModMap;
+use deps::map::{DependencyMap, AsMap};
+use deps::resolver::UnresolvedMap;
+use types::MoveType;
+use types::ModAddr;
+use types::ModAddrTuple;
+use extract::prelude::*;
+use output::utils::path_to_string;
 
 
 fn main() {
@@ -53,17 +60,21 @@ fn validate_config(mut opts: cli::Opts) -> Result<cli::Opts> {
 	{
 		use cli::Dialect;
 
-		match (opts.input.online.offline, opts.input.online.ds.as_ref(), opts.input.dialect) {
-			(true, Some(_), _) => {
-				opts.input.online.ds = None;
-				info!("Offline mode requested, so passes node (data-source) URI will be ignored.");
-			},
-			(false, None, Dialect::Libra) => info!("Offline mode turned on 'cause of node URI is missed."),
-			(false, None, Dialect::Dfinance) => {
-				// TODO: set up default endpoint URI? Are we should share own node?
-				// opts.input.ds = Some("?");
-			},
-			_ => {},
+		if opts.input.online.offline {
+			info!("Offline mode requested, so passes node (data-source) URI will be ignored");
+			for ds in opts.input.online.ds.drain(..) {
+				debug!("\t\t- {}", ds);
+			}
+		} else {
+			match (opts.input.online.ds.len(), opts.input.dialect) {
+				(0, Dialect::Libra) => info!("Offline mode turned on 'cause of node URI is missed."),
+				(0, Dialect::Dfinance) => {
+					info!("Offline mode turned on 'cause of node URI is missed.")
+					// TODO: set up default endpoint URI? Are we should share own node?
+					// opts.input.ds = Some("?");
+				},
+				_ => {},
+			}
 		}
 	}
 
@@ -74,20 +85,11 @@ fn validate_config(mut opts: cli::Opts) -> Result<cli::Opts> {
 
 fn run(opts: cli::Opts) {
 	let (input_type, input, input_deps) = read_input(&opts);
-	let deps = read_offline_deps(&opts);
+	let (deps, missed_deps) = read_deps(&opts.input, &input_deps);
 
-	// create online deps-resolver(s), resolve all deps in DependencyMap recursively, then destroy.
-	let mut deps = if !opts.input.online.offline {
-		use deps::online::*;
-		let link = deps::online::OnlineDependencySearch::with_opts(&opts.input.online);
-		let mut resolver = deps::resolver::DependencyResolverMap::new(deps);
-		resolver.add_searcher(link);
-		resolver.prefetch_deps(&input_deps);
-		resolver.prefetch_deps_recursively();
-		resolver.into_map()
-	} else {
-		deps
-	};
+
+	// TODO: extract
+
 
 	// TODO: knoleges
 
@@ -96,7 +98,36 @@ fn run(opts: cli::Opts) {
 	// TODO: render
 }
 
-fn read_input(opts: &cli::Opts) -> (MoveType, CompiledMove, Vec<DependencyMapKey>) {
+
+fn read_deps(opts: &cli::Input, input_deps: &[ModAddr]) -> (ModMap, UnresolvedMap<ModAddr>) {
+	let deps_local = read_offline_deps(&opts);
+
+	// create online deps-resolver(s), resolve all deps in DependencyMap recursively, then destroy.
+	let (deps, missed_deps) = if !opts.online.offline {
+		use deps::online::*;
+		let searchers = opts.online
+		                    .ds
+		                    .iter()
+		                    .cloned()
+		                    .map(deps::online::OnlineDependencySearch::new);
+		let mut resolver = deps::resolver::DependencyResolverMap::new(deps_local);
+		searchers.for_each(|s| resolver.add_searcher(s));
+		resolver.prefetch_deps(&input_deps);
+		resolver.prefetch_deps_recursively();
+		resolver.split()
+	} else {
+		(deps_local, Default::default())
+	};
+
+	for (dep, err) in missed_deps.iter() {
+		warn!("{:#X} not found, Err: '{}'", dep, err);
+	}
+
+	(deps, missed_deps)
+}
+
+
+fn read_input(opts: &cli::Opts) -> (MoveType, CompiledMove, Vec<ModAddr>) {
 	let bytes = std::fs::read(&opts.input.offline.path).expect("Unable to read input bytecode");
 
 	let source_type = match opts.input.offline.kind {
@@ -112,23 +143,29 @@ fn read_input(opts: &cli::Opts) -> (MoveType, CompiledMove, Vec<DependencyMapKey
 			t
 		},
 	};
-	let input = disasm::CompiledMove::deserialize(&bytes).expect("Input bytecode can't be deserialized");
-	let deps = disasm::deserialize_deps(&input);
-	#[rustfmt::skip]
-	debug!("input.deps: {}", deps.iter().map(|(a, n)|format!("{}.{}",a,n)).collect::<Vec<_>>().join(", "));
 
-	(source_type, input, deps)
+	let root = disasm::CompiledMove::deserialize(&bytes).expect("Input bytecode can't be deserialized");
+	let root_deps = extract_mod_handles(&root);
+
+	#[rustfmt::skip]
+	debug!("input.deps: ({}) [{}]", root_deps.len(), root_deps.iter().map(|m| format!("{:#X}", m)).collect::<Vec<_>>().join(", "));
+
+	(source_type, root, root_deps)
 }
 
-fn read_offline_deps(opts: &cli::Opts) -> DependencyMap {
-	let mut index = DependencyMap::default();
-	let deps = deps::offline::OfflineDependencySearch::new_from_opts(&opts.input.offline);
+fn read_offline_deps(opts: &cli::Input) -> ModMap {
+	let mut index = ModMap::default();
+	let deps = deps::offline::OfflineDependencySearch::new_from_opts(&opts.offline);
 	deps.into_load_all().for_each(|(k, v)| {
 		                    match v {
 			                    Ok(bytes) => index.insert_file(k, bytes),
 		                       Err(err) => error!("Unable to load {} : {}", path_to_string(&k), err),
 		                    }
 	                    });
+	//
+	// here can add some more
+	// e.g. cache or std
+	//
 	index.build_deps_links();
 	index
 }
