@@ -86,11 +86,18 @@ fn run(opts: cli::Opts) {
 	let (input_type, input, input_deps) = read_input(&opts);
 	let (deps, missed_deps) = read_deps(&opts.input, &input_deps);
 
+	// extract structs, resources
+	if let CompiledMove::Module(compiled_mod) = input {
+		let input_struct_map = extract_struct_map(&compiled_mod);
+		dbg!(input_struct_map);
+	}
 
-	// TODO: extract
-	// - extract resources
-	// - extract structs
-	// - extract functions
+	for (mod_addr, mod_info) in deps {
+		let struct_map = extract_struct_map(mod_info.bytecode());
+		dbg!(struct_map);
+	}
+
+	// TODO: extract functions
 
 	// TODO: knoleges
 

@@ -1,6 +1,7 @@
 use std::fmt::{Display, LowerHex, UpperHex, Binary, Formatter, Result};
 use libra::libra_types::account_address::AccountAddress;
 use libra::move_core_types::identifier::IdentStr;
+use libra::move_core_types::language_storage::ModuleId;
 
 
 #[derive(Debug, Clone, Eq, PartialEq, Hash)]
@@ -37,6 +38,9 @@ impl<'a, S: ToString> From<(&'a AccountAddress, S)> for ModAddr {
 }
 impl<'a, S: ToString> From<&'a (&'a AccountAddress, S)> for ModAddr {
 	fn from(v: &'a (&'a AccountAddress, S)) -> Self { Self(v.0.to_owned(), v.1.to_string()) }
+}
+impl From<ModuleId> for ModAddr {
+	fn from(mod_id: ModuleId) -> Self { (mod_id.address(), mod_id.name()).into() }
 }
 
 
