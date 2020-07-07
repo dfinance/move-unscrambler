@@ -86,16 +86,20 @@ fn run(opts: cli::Opts) {
     let (deps, missed_deps) = read_deps(&opts.input, &input_deps);
 
     // extract structs, resources
-    if let CompiledMove::Module(compiled_mod) = input {
-        let input_struct_map = extract_struct_map(&compiled_mod);
-        dbg!(input_struct_map);
-    }
-
-    for (mod_addr, mod_info) in deps {
-        println!("FOR MOD: {:#X}", mod_addr);
-        let struct_map = extract_struct_map(mod_info.bytecode());
-        dbg!(struct_map);
-    }
+    let struct_map: StructMap = {
+        let deps_iter = deps
+            .iter()
+            .map(|(_, dep)| extract_struct_map(dep.bytecode()).into_iter())
+            .flatten();
+        if let CompiledMove::Module(compiled_mod) = &input {
+            extract_struct_map(&compiled_mod)
+                .into_iter()
+                .chain(deps_iter)
+                .collect()
+        } else {
+            deps_iter.collect()
+        }
+    };
 
     // TODO: extract functions
 

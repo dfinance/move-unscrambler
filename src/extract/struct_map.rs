@@ -7,6 +7,8 @@ use libra::vm::access::ModuleAccess;
 use std::ops::Deref;
 use crate::types::{ModAddr, StructAddr};
 
+pub type StructMap = HashMap<StructAddr, StructInfo>;
+
 #[derive(Debug)]
 pub enum StructKind {
     HasResourceAsType,
