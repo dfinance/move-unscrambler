@@ -1051,6 +1051,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "libra-compat"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "log",
+]
+
+[[package]]
 name = "libra-crypto"
 version = "0.1.0"
 source = "git+https://github.com/dfinance/libra.git#0426d5b8c4388edbcdf72009de8c3f0b695f520d"
@@ -1450,6 +1458,7 @@ dependencies = [
  "clap 3.0.0-beta.1",
  "console_log",
  "env_logger",
+ "libra-compat",
  "libra-deps",
  "log",
  "move-describe-network",

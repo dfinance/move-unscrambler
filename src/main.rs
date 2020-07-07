@@ -105,6 +105,8 @@ fn run(opts: cli::Opts) {
 
     // TODO: knoleges
 
+    // - entry point(s): (script's main) or (pub funcs of module) where script-or-module is `input`.
+
     // TODO: analyze
 
     // TODO: render
@@ -139,7 +141,8 @@ fn read_deps(opts: &cli::Input, input_deps: &[ModAddr]) -> (ModMap, UnresolvedMa
 }
 
 fn read_input(opts: &cli::Opts) -> (MoveType, CompiledMove, Vec<ModAddr>) {
-    let bytes = std::fs::read(&opts.input.offline.path).expect("Unable to read input bytecode");
+    let mut bytes = std::fs::read(&opts.input.offline.path).expect("Unable to read input bytecode");
+    compat::adapt(&mut bytes);
 
     let source_type = match opts.input.offline.kind {
         InputType::Script => MoveType::Script,
@@ -169,7 +172,10 @@ fn read_offline_deps(opts: &cli::Input) -> ModMap {
     let mut index = ModMap::default();
     let deps = deps::offline::OfflineDependencySearch::new_from_opts(&opts.offline);
     deps.into_load_all().for_each(|(k, v)| match v {
-        Ok(bytes) => index.insert_file(k, bytes),
+        Ok(mut bytes) => {
+            compat::adapt(&mut bytes);
+            index.insert_file(k, bytes)
+        }
         Err(err) => error!("Unable to load {} : {}", path_to_string(&k), err),
     });
     //

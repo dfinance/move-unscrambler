@@ -13,8 +13,9 @@ anyhow = "1.0.31"
 
 walkdir = "2.3.1"
 
-libra = { package = "libra-deps", path = "libra" }
 net = { package = "move-describe-network", path = "net" }
+libra = { package = "libra-deps", path = "libra" }
+compat = { package = "libra-compat", path = "compat" }
 
 [dependencies.serde]
 version = "1.0"
@@ -52,6 +53,7 @@ pretty_log = [
 [workspace]
 members = [
 	"poc", # TODO: refactor, move to the main crate.
-	"libra",
 	"net",
+	"libra",
+	"compat"
 ]
