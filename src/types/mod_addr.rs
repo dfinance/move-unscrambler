@@ -26,7 +26,6 @@ impl<T: Into<ModAddr>> IntoModAddr for T {
 	fn into_mod_addr(self) -> ModAddr { self.into() }
 }
 
-pub type ModAddrTuple = (AccountAddress, /* name: */ String);
 impl<'a, S: ToString> From<(AccountAddress, S)> for ModAddr {
 	fn from(v: (AccountAddress, S)) -> Self { Self(v.0, v.1.to_string()) }
 }

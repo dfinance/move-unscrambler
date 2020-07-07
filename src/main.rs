@@ -25,7 +25,6 @@ use deps::map::{DependencyMap, AsMap};
 use deps::resolver::UnresolvedMap;
 use types::MoveType;
 use types::ModAddr;
-use types::ModAddrTuple;
 use extract::prelude::*;
 use output::utils::path_to_string;
 
