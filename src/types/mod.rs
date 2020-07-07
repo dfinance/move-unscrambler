@@ -8,9 +8,8 @@ pub use fn_addr::*;
 pub use struct_addr::*;
 pub use block_addr::*;
 
-
 #[derive(Debug)]
 pub enum MoveType {
-	Script,
-	Module,
+    Script,
+    Module,
 }
