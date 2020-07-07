@@ -1,11 +1,11 @@
-mod acc_addr;
 mod mod_addr;
 mod fn_addr;
+mod struct_addr;
 mod block_addr;
 
-pub use acc_addr::*;
 pub use mod_addr::*;
 pub use fn_addr::*;
+pub use struct_addr::*;
 pub use block_addr::*;
 
 

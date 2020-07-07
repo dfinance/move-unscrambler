@@ -11,11 +11,14 @@ use crate::types::*;
 
 
 pub mod mod_addr;
+pub mod fn_addr;
 pub mod mod_handles;
 pub mod fn_handles;
 
 pub mod prelude {
 	pub use super::{Extract, ExtractRef, ExtractMut};
+	pub use super::mod_addr::*;
+	pub use super::fn_addr::*;
 	pub use super::mod_handles::*;
 	pub use super::fn_handles::*;
 }

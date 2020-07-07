@@ -89,7 +89,9 @@ fn run(opts: cli::Opts) {
 
 
 	// TODO: extract
-
+	// - extract resources
+	// - extract structs
+	// - extract functions
 
 	// TODO: knoleges
 
