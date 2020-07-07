@@ -36,8 +36,12 @@ pub trait ExtractMut<T> {
 	fn extract_mut(&mut self) -> &mut T;
 }
 
+pub trait ExtractFrom<T, K> {
+	fn extract_from(&self, from: &K) -> T;
+}
+
 pub trait ExtractWith<T, K> {
-	fn extract_with(&self, other: K) -> T;
+	fn extract_with(&self, other: &K) -> T;
 }
 
 
