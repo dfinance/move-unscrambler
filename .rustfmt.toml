@@ -1,6 +1,6 @@
 # https://github.com/rust-lang-nursery/rustfmt
 # https://github.com/rust-lang-nursery/rustfmt/blob/master/Configurations.md
-#! required min version rustfmt 1.4.15-nightly (aedff61f 2020-05-19)
+# required stable version rustfmt 1.4.12-stable (a828ffea 2020-03-11)
 
 edition = "2018"
 use_field_init_shorthand = true
