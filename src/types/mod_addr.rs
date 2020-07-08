@@ -1,3 +1,4 @@
+use std::convert::TryInto;
 use std::fmt::{Display, LowerHex, UpperHex, Binary, Formatter, Result};
 use libra::libra_types::account_address::AccountAddress;
 use libra::move_core_types::identifier::IdentStr;
@@ -91,7 +92,11 @@ mod tests {
     use super::*;
 
     fn addr_empty() -> ModAddr {
-        (AccountAddress::new([0; 16]), "Foo".to_owned()).into()
+        (
+            AccountAddress::new([0; AccountAddress::LENGTH]),
+            "Foo".to_owned(),
+        )
+            .into()
     }
     fn addr_42() -> ModAddr {
         (

@@ -115,7 +115,7 @@ mod access {
     }
 
     static DEFAULT_SCRIPT_NAME: &'static str = "script";
-    const DEFAULT_SCRIPT_ADDRESS: [u8; 16] = [255; 16];
+    const DEFAULT_SCRIPT_ADDRESS: [u8; AccountAddress::LENGTH] = [255; AccountAddress::LENGTH];
 
     impl MoveAccess for CompiledMove {
         fn is_script(&self) -> bool {

@@ -15,7 +15,7 @@ walkdir = "2.3.1"
 
 net = { package = "move-describe-network", path = "net" }
 libra = { package = "libra-deps", path = "libra" }
-compat = { package = "libra-compat", path = "compat" }
+compat = { package = "move-compat", path = "compat" }
 
 [dependencies.serde]
 version = "1.0"
