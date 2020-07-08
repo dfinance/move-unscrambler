@@ -14,6 +14,7 @@ pub mod fn_addr;
 pub mod mod_handles;
 pub mod fn_handles;
 pub mod struct_map;
+pub mod functions;
 
 pub mod prelude {
     pub use super::{Extract, ExtractRef, ExtractMut, ExtractFrom, ExtractWith};
