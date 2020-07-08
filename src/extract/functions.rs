@@ -12,27 +12,8 @@ pub struct FunctionInfo {
     returns: Vec<Ty>,
     acquires: Vec<StructAddr>,
     is_public: bool,
+    is_native: bool,
     code: Option<CodeUnit>,
-}
-
-impl FunctionInfo {
-    pub fn new(
-        parameters: Vec<Ty>,
-        type_parameters: Vec<TypeParamKind>,
-        returns: Vec<Ty>,
-        acquires: Vec<StructAddr>,
-        is_public: bool,
-        code: Option<CodeUnit>,
-    ) -> FunctionInfo {
-        FunctionInfo {
-            parameters,
-            type_parameters,
-            returns,
-            acquires,
-            is_public,
-            code,
-        }
-    }
 }
 
 pub fn extract_functions(compiled_mod: &CompiledModule) -> HashMap<FnAddr, FunctionInfo> {
@@ -49,7 +30,6 @@ pub fn extract_functions(compiled_mod: &CompiledModule) -> HashMap<FnAddr, Funct
             .iter()
             .map(|param| extract_ty(param, compiled_mod))
             .collect();
-        let is_public = function_def.is_public;
         let type_parameters = function_handle
             .type_parameters
             .iter()
@@ -71,16 +51,21 @@ pub fn extract_functions(compiled_mod: &CompiledModule) -> HashMap<FnAddr, Funct
             let acq_struct_addr = StructAddr::new(module_id.into_mod_addr(), name);
             acqs.push(acq_struct_addr)
         }
+        let is_public = function_def.is_public();
+        let is_native = function_def.is_native();
         let fn_addr = FnAddr::new(compiled_mod.self_id(), name);
-        let function_info = FunctionInfo::new(
-            parameters,
-            type_parameters,
-            returns,
-            acqs,
-            is_public,
-            function_def.code.clone(),
+        functions_map.insert(
+            fn_addr,
+            FunctionInfo {
+                parameters,
+                type_parameters,
+                returns,
+                acquires: acqs,
+                is_public,
+                is_native,
+                code: function_def.code.clone(),
+            },
         );
-        functions_map.insert(fn_addr, function_info);
     }
     functions_map
 }
