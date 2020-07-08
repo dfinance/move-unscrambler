@@ -18,7 +18,9 @@ fn log_level_from_num(level: u8) -> String {
     #[rustfmt::skip]
 	let self_filters = [
 			env!("CARGO_PKG_NAME"),
-			&env!("CARGO_PKG_NAME").replace("-", "_")
+			&env!("CARGO_PKG_NAME").replace("-", "_"),
+			"move_describe_network",
+			"move_compat",
 		].join(&format!("={},", self_level)) + &format!("={}", self_level);
 
     format!(

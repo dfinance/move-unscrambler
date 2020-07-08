@@ -11,9 +11,9 @@ dependencies = [
 
 [[package]]
 name = "aead"
-version = "0.3.1"
+version = "0.3.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3672ba0d12aaf256aabcdab516ebed87b5cec4b602316d7a3035fac9b7a9567b"
+checksum = "7fc95d1bdb8e6666b2b217308eeeb09f2d6728d104be3e31916cc74d15420331"
 dependencies = [
  "generic-array 0.14.2",
 ]
@@ -60,7 +60,7 @@ version = "0.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "86f5007801316299f922a6198d1d09a0bae95786815d066d5880d13f7c45ead1"
 dependencies = [
- "aead 0.3.1",
+ "aead 0.3.2",
  "aes 0.4.0",
  "block-cipher",
  "ghash 0.3.0",
@@ -1051,14 +1051,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "libra-compat"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "log",
-]
-
-[[package]]
 name = "libra-crypto"
 version = "0.1.0"
 source = "git+https://github.com/dfinance/libra.git#0426d5b8c4388edbcdf72009de8c3f0b695f520d"
@@ -1374,6 +1366,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "258c143ddb5105becc4834f66d0b0ad3d3205d07cb3efc3236f33f623dd07b16"
 
 [[package]]
+name = "move-compat"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "libra-deps",
+ "log",
+]
+
+[[package]]
 name = "move-core-types"
 version = "0.1.0"
 source = "git+https://github.com/dfinance/libra.git#0426d5b8c4388edbcdf72009de8c3f0b695f520d"
@@ -1458,9 +1459,9 @@ dependencies = [
  "clap 3.0.0-beta.1",
  "console_log",
  "env_logger",
- "libra-compat",
  "libra-deps",
  "log",
+ "move-compat",
  "move-describe-network",
  "pretty_env_logger",
  "serde",
@@ -2211,9 +2212,9 @@ checksum = "c111b5bd5695e56cffe5129854aa230b39c93a305372fdbb2668ca2394eea9f8"
 
 [[package]]
 name = "smallvec"
-version = "1.4.0"
+version = "1.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c7cb5678e1615754284ec264d9bb5b4c27d2018577fd90ac0ceb578591ed5ee4"
+checksum = "3757cb9d89161a2f24e1cf78efa0c1fcff485d18e3f55e0aa3480824ddaa0f3f"
 
 [[package]]
 name = "socket2"
