@@ -83,6 +83,7 @@ mod access {
         StructDefInstantiation, FunctionHandleIndex, FunctionHandle, StructHandleIndex,
         StructHandle, FunctionDefinitionIndex, FunctionDefinition,
     };
+    use crate::types::{FnAddr, ModAddr};
 
     /// Represents accessors for a compiled move binary.
     pub trait MoveAccess: Sync {
@@ -114,8 +115,22 @@ mod access {
         fn address_identifiers(&self) -> &[AccountAddress];
     }
 
-    static DEFAULT_SCRIPT_NAME: &'static str = "script";
-    const DEFAULT_SCRIPT_ADDRESS: [u8; AccountAddress::LENGTH] = [255; AccountAddress::LENGTH];
+    pub const DEFAULT_SCRIPT_MAINFN_NAME: &'static str = "main";
+    pub const DEFAULT_SCRIPT_NAME: &'static str = "script";
+    pub const DEFAULT_SCRIPT_ADDRESS: [u8; AccountAddress::LENGTH] = [255; AccountAddress::LENGTH];
+
+    type IntoModAddr = (AccountAddress, &'static str);
+    pub const fn default_script_address() -> IntoModAddr /* :impl Into<ModAddr> */ {
+        (
+            AccountAddress::new(DEFAULT_SCRIPT_ADDRESS),
+            DEFAULT_SCRIPT_NAME,
+        )
+    }
+
+    type IntoFnAddr = (IntoModAddr, &'static str);
+    pub const fn default_script_fn_address() -> IntoFnAddr /* :impl Into<FnAddr> */ {
+        (default_script_address(), DEFAULT_SCRIPT_MAINFN_NAME)
+    }
 
     impl MoveAccess for CompiledMove {
         fn is_script(&self) -> bool {

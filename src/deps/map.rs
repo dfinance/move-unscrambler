@@ -77,12 +77,12 @@ impl DependencyMap for ModMap {
 
         Self::build_deps_for(&mut info);
         debug!(
-            "inserted {:#X} with ({}) deps: [{}]",
+            "inserted {:#x} with ({}) deps: [{}]",
             addr,
             info.dependencies.len(),
             info.dependencies
                 .iter()
-                .map(|m| format!("{:#X}", m))
+                .map(|m| format!("{:#x}", m))
                 .collect::<Vec<_>>()
                 .join(", ")
         );

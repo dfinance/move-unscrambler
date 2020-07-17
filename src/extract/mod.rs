@@ -21,8 +21,9 @@ pub mod prelude {
     pub use super::mod_addr::*;
     pub use super::fn_addr::*;
     pub use super::mod_handles::*;
-    pub use super::fn_handles::*;
     pub use super::struct_map::*;
+    pub use super::fn_handles::*;
+    pub use super::functions::*;
 }
 
 pub trait Extract<T> {

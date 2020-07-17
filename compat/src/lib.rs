@@ -15,8 +15,8 @@ use libra::vm::file_format_common::*;
 
 mod detect;
 mod convert;
-mod compat;
-use compat::*;
+mod utils;
+use utils::*;
 
 type Cur<'a> = Cursor<&'a [u8]>;
 pub type BinVersion = (u8, u8);

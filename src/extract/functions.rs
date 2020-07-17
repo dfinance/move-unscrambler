@@ -1,22 +1,29 @@
-use libra::vm::file_format::{CompiledModule, CodeUnit};
+use libra::vm::file_format::{CompiledModule, CodeUnit, CompiledScript};
 use libra::vm::access::ModuleAccess;
-use crate::types::{
-    extract_ty, Ty, FnAddr, ModAddr, IntoModAddr, TypeParamKind, extract_type_param_kind,
-    StructAddr,
+use libra::vm::access::ScriptAccess;
+use crate::{
+    disasm::{default_script_fn_address, default_script_address},
+    types::{
+        extract_ty, Ty, FnAddr, ModAddr, IntoModAddr, TypeParamKind, extract_type_param_kind,
+        StructAddr, extract_ty_scrpt,
+    },
 };
 use std::collections::HashMap;
 
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub struct FunctionInfo {
-    parameters: Vec<Ty>,
-    type_parameters: Vec<TypeParamKind>,
-    returns: Vec<Ty>,
-    acquires: Vec<StructAddr>,
-    is_public: bool,
-    is_native: bool,
-    code: Option<CodeUnit>,
+    pub parameters: Vec<Ty>,
+    pub type_parameters: Vec<TypeParamKind>,
+    pub returns: Vec<Ty>,
+    pub acquires: Vec<StructAddr>,
+    pub is_public: bool,
+    pub is_native: bool,
+    pub code: Option<CodeUnit>,
 }
 
-pub fn extract_functions(compiled_mod: &CompiledModule) -> HashMap<FnAddr, FunctionInfo> {
+pub type FnMap = HashMap<FnAddr, FunctionInfo>;
+
+pub fn extract_functions(compiled_mod: &CompiledModule) -> FnMap {
     let mut functions_map = HashMap::new();
     for function_def in compiled_mod.function_defs() {
         let function_handle = compiled_mod.function_handle_at(function_def.function);
@@ -41,6 +48,7 @@ pub fn extract_functions(compiled_mod: &CompiledModule) -> HashMap<FnAddr, Funct
             .iter()
             .map(|ty| extract_ty(ty, compiled_mod))
             .collect();
+
         let mut acqs = vec![];
         for acq in function_def.acquires_global_resources.clone() {
             let struct_def = compiled_mod.struct_def_at(acq);
@@ -51,6 +59,7 @@ pub fn extract_functions(compiled_mod: &CompiledModule) -> HashMap<FnAddr, Funct
             let acq_struct_addr = StructAddr::new(module_id.into_mod_addr(), name);
             acqs.push(acq_struct_addr)
         }
+
         let is_public = function_def.is_public();
         let is_native = function_def.is_native();
         let fn_addr = FnAddr::new(compiled_mod.self_id(), name);
@@ -68,4 +77,21 @@ pub fn extract_functions(compiled_mod: &CompiledModule) -> HashMap<FnAddr, Funct
         );
     }
     functions_map
+}
+
+pub fn extract_script_main_fn(
+    bc: &CompiledScript,
+) -> impl IntoIterator<Item = (FnAddr, FunctionInfo)> {
+    vec![(
+        default_script_fn_address().into(),
+        FunctionInfo {
+            parameters: Default::default(),
+            type_parameters: Default::default(),
+            returns: Default::default(),
+            acquires: Default::default(),
+            is_public: true,
+            is_native: false,
+            code: Some(bc.code().to_owned()),
+        },
+    )]
 }

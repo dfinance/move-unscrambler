@@ -19,7 +19,7 @@ fn log_level_from_num(level: u8) -> String {
 	let self_filters = [
 			env!("CARGO_PKG_NAME"),
 			&env!("CARGO_PKG_NAME").replace("-", "_"),
-			"move_describe_network",
+			"move_unscrambler_network",
 			"move_compat",
 		].join(&format!("={},", self_level)) + &format!("={}", self_level);
 

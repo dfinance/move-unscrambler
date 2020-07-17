@@ -5,7 +5,7 @@ pub use clap::Clap;
 mod logging;
 
 #[derive(Clap, Debug)]
-#[clap(name = "Move Describer")]
+#[clap(name = "Move Unscrambler")]
 pub struct Opts {
     // /// Sets a custom config file. Could have been an Option<T> with no default too
     // #[clap(short, long, default_value = "~/.somedir/default.toml")]
@@ -22,38 +22,43 @@ pub struct Opts {
     log: logging::Opts,
 }
 
+pub const OUTPUT_STDOUT: &'static str = "--";
+
 #[derive(Clap, Debug)]
 pub struct Output {
     /// Output target directory.
     /// Prints to stdout by default.
-    #[clap(short = "o", long = "output", name = "output directory")]
+    #[clap(short = "o", long = "output", name = "output directory", default_value = OUTPUT_STDOUT)]
     // TODO: add default_value = "--" and support output to stdout.
     pub dir: PathBuf,
 
     /// Forces override files in the output directory.
     #[clap(short, long)]
-    force: bool,
+    pub force: bool,
 
     /// Sets format of output document.
     #[clap(long = "fmt", possible_values = &[OutputFmt::MARKDOWN, OutputFmt::HTML], default_value = OutputFmt::DEFAULT)]
-    format: OutputFmt,
+    pub format: OutputFmt,
 
     /// Inlines assets into the output document.
     /// Default value is false, but forced to true if output setted up to stdout (--).
     #[clap(long, name = "inline assets")]
-    inline: bool,
+    pub inline: bool,
 }
 
 #[derive(Clap, Debug)]
-enum OutputFmt {
+pub enum OutputFmt {
     Markdown,
     Html,
+    Json,
+    Yaml,
 }
 
 impl OutputFmt {
     const DEFAULT: &'static str = Self::MARKDOWN;
     const MARKDOWN: &'static str = "md";
     const HTML: &'static str = "html";
+    const JSON: &'static str = "json";
 }
 
 impl std::str::FromStr for OutputFmt {
@@ -63,6 +68,7 @@ impl std::str::FromStr for OutputFmt {
         match s.to_lowercase().as_ref() {
             Self::MARKDOWN => Ok(OutputFmt::Markdown),
             Self::HTML => Ok(OutputFmt::Html),
+            Self::JSON => Ok(OutputFmt::Json),
             _ => Err(format!("Unsupported output format '{}'", s)),
         }
     }

@@ -607,28 +607,28 @@ impl<Location: Clone + Eq> Disassembler<Location> {
                     struct_idx, name, ty_params
                 ))
             }
-            Bytecode::MoveToSender(struct_idx) => {
-                let (name, ty_params) = self.struct_type_info(*struct_idx, &Signature(vec![]))?;
-                Ok(format!(
-                    "MoveToSender[{}]({}{})",
-                    struct_idx, name, ty_params
-                ))
-            }
-            Bytecode::MoveToSenderGeneric(struct_idx) => {
-                let struct_inst = self
-                    .source_mapper
-                    .bytecode
-                    .struct_instantiation_at(*struct_idx);
-                let type_params = self
-                    .source_mapper
-                    .bytecode
-                    .signature_at(struct_inst.type_parameters);
-                let (name, ty_params) = self.struct_type_info(struct_inst.def, type_params)?;
-                Ok(format!(
-                    "MoveToSenderGeneric[{}]({}{})",
-                    struct_idx, name, ty_params
-                ))
-            }
+            // Bytecode::MoveToSender(struct_idx) => {
+            //     let (name, ty_params) = self.struct_type_info(*struct_idx, &Signature(vec![]))?;
+            //     Ok(format!(
+            //         "MoveToSender[{}]({}{})",
+            //         struct_idx, name, ty_params
+            //     ))
+            // }
+            // Bytecode::MoveToSenderGeneric(struct_idx) => {
+            //     let struct_inst = self
+            //         .source_mapper
+            //         .bytecode
+            //         .struct_instantiation_at(*struct_idx);
+            //     let type_params = self
+            //         .source_mapper
+            //         .bytecode
+            //         .signature_at(struct_inst.type_parameters);
+            //     let (name, ty_params) = self.struct_type_info(struct_inst.def, type_params)?;
+            //     Ok(format!(
+            //         "MoveToSenderGeneric[{}]({}{})",
+            //         struct_idx, name, ty_params
+            //     ))
+            // }
             Bytecode::Call(method_idx) => {
                 let function_handle = self.source_mapper.bytecode.function_handle_at(*method_idx);
                 let fcall_name = self

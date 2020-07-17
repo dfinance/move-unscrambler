@@ -147,10 +147,10 @@ fn render_sec(addr: &AccountAddress, name: &str, sec: &Section, out_dir: &Path) 
             // meta:
             let meta = &sec.meta;
 
-            if meta.knoleges.len() > 0 {
+            if meta.knowledge.len() > 0 {
                 res.push_str(&format!("### What it can do\n\n"));
 
-                for s in meta.knoleges.iter() {
+                for s in meta.knowledge.iter() {
                     res.push_str(&format!("- {}\n", s));
                 }
                 res.push_str("\n\n");
@@ -334,7 +334,7 @@ struct FunctionSec {
 struct FunctionMeta {
     cf_used: bool,
     cfg: Option<vis::CtrlFlowGraph>,
-    knoleges: Vec<String>,
+    knowledge: Vec<String>,
 }
 
 static DEF_SCRIPT_FN_NAME: &str = "<SELF>";
@@ -386,7 +386,7 @@ fn extract_fns<Loc: Clone + Eq>(mut dis: &Disassembler<Loc>, mut doc: &mut Docum
 
     // signature
     // asm
-    // knoleges:
+    // knowledge:
     // 	- cals: ->
     // 	- usages: addresses
     // 	- returns
@@ -513,7 +513,7 @@ fn extract_fn<Loc: Clone + Eq>(
                     let nh = bc.identifier_at(fh.name).as_str();
                     let mh = mod_handle_sig(&fh.module);
                     // println!("CALL: {}.{}", mh, nh);
-                    meta.knoleges
+                    meta.knowledge
                         .push(format!("{} function `0x{}:{}`", pre_can_call, mh, nh));
                 }
 
@@ -529,7 +529,7 @@ fn extract_fn<Loc: Clone + Eq>(
                     // dis.struct_type_info(, tys.0);
 
                     // println!("CALL: {}:{}", mh, nh);
-                    meta.knoleges
+                    meta.knowledge
                         .push(format!("{} function {}:{}", pre_can_call, mh, nh));
                 }
 
@@ -538,11 +538,11 @@ fn extract_fn<Loc: Clone + Eq>(
                     // let styi = dis.struct_type_info(*sidx, SIG);
                     // let sh = bc.struct_handle_at(sd.struct_handle);
                     let sh_sig = struct_handle_sig(&sd.struct_handle);
-                    meta.knoleges.push(format!("{} {}", pre_can_modf, sh_sig));
+                    meta.knowledge.push(format!("{} {}", pre_can_modf, sh_sig));
                 }
                 Bytecode::MutBorrowField(fidx) => {
                     let f_sig = struct_field_sig(fidx);
-                    meta.knoleges.push(format!("{} {}", pre_can_modf, f_sig));
+                    meta.knowledge.push(format!("{} {}", pre_can_modf, f_sig));
                 }
                 _ => {}
             }

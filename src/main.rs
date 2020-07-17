@@ -19,12 +19,12 @@ mod output;
 
 use anyhow::{bail, format_err, Result};
 use cli::InputType;
-use disasm::CompiledMove;
+use disasm::{default_script_fn_address, CompiledMove};
 use deps::map::ModMap;
 use deps::map::{DependencyMap, AsMap};
 use deps::resolver::UnresolvedMap;
 use types::MoveType;
-use types::ModAddr;
+use types::{FnAddr, ModAddr};
 use extract::prelude::*;
 use output::utils::path_to_string;
 
@@ -101,15 +101,53 @@ fn run(opts: cli::Opts) {
         }
     };
 
-    // TODO: extract functions
+    // extract functions
+    let fn_map: FnMap = {
+        let deps_iter = deps
+            .iter()
+            .map(|(_, dep)| extract_functions(dep.bytecode()).into_iter())
+            .flatten();
+        match &input {
+            CompiledMove::Module(bc) => extract_functions(&bc)
+                .into_iter()
+                .chain(deps_iter)
+                .collect(),
 
-    // TODO: knoleges
+            CompiledMove::Script(bc) => extract_script_main_fn(&bc)
+                .into_iter()
+                .chain(deps_iter)
+                .collect(),
+        }
+    };
 
-    // - entry point(s): (script's main) or (pub funcs of module) where script-or-module is `input`.
+    {
+        for (addr, fi) in fn_map.iter() {
+            error!("FN: {} => {:#?}", addr, fi);
+        }
+    }
+
+    // get entry point(s)
+    let entry_points: Vec<FnAddr> = {
+        let root_mod: ModAddr = input.extract();
+        fn_map
+            .iter()
+            .filter(|(k, v)| k.addr() == &root_mod && v.is_public)
+            .map(|(k, _)| k)
+            .cloned()
+            .collect()
+    };
+
+    for ep in entry_points {
+        error!("entry point: {:x}", ep);
+    }
 
     // TODO: analyze
 
     // TODO: render
+
+    output::tmt::render(&opts.output, ())
+        .map_err(|err| error!("{}", err))
+        .ok();
 }
 
 fn read_deps(opts: &cli::Input, input_deps: &[ModAddr]) -> (ModMap, UnresolvedMap<ModAddr>) {
@@ -134,7 +172,7 @@ fn read_deps(opts: &cli::Input, input_deps: &[ModAddr]) -> (ModMap, UnresolvedMa
     };
 
     for (dep, err) in missed_deps.iter() {
-        warn!("{:#X} not found, Err: '{}'", dep, err);
+        warn!("{:#x} not found, Err: '{}'", dep, err);
     }
 
     (deps, missed_deps)
@@ -163,7 +201,7 @@ fn read_input(opts: &cli::Opts) -> (MoveType, CompiledMove, Vec<ModAddr>) {
     let root_deps = extract_mod_handles(&root);
 
     #[rustfmt::skip]
-	debug!("input.deps: ({}) [{}]", root_deps.len(), root_deps.iter().map(|m| format!("{:#X}", m)).collect::<Vec<_>>().join(", "));
+	debug!("input.deps: ({}) [{}]", root_deps.len(), root_deps.iter().map(|m| format!("{:#x}", m)).collect::<Vec<_>>().join(", "));
 
     (source_type, root, root_deps)
 }

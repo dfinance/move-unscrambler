@@ -16,7 +16,7 @@ where
 {
     fn search(&self, module: Q) -> anyhow::Result<(DependencySource, Vec<u8>)> {
         let m: ModAddr = module.into();
-        trace!("net request for {:#X}", m);
+        trace!("net request for {:#x}", m);
         let (addr, name) = m.split();
         net::get(&addr, name, &self.config).map(|bytes| (DependencySource::Net, bytes))
     }

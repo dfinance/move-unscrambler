@@ -9,5 +9,3 @@ anyhow = "1.0.31"
 libra = { package = "libra-deps", path = "../libra" }
 
 [features]
-# default = [ "dfi-libra-compat" ]
-dfi-libra-compat = []

@@ -1,7 +1,7 @@
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [package]
-name = "move-describe"
+name = "move-unscrambler"
 version = "0.0.1"
 authors = ["Alex Koz. <a@koz.email>"]
 edition = "2018"
@@ -13,9 +13,16 @@ anyhow = "1.0.31"
 
 walkdir = "2.3.1"
 
-net = { package = "move-describe-network", path = "net" }
+net = { package = "move-unscrambler-network", path = "net" }
 libra = { package = "libra-deps", path = "libra" }
 compat = { package = "move-compat", path = "compat" }
+
+# render
+serde_json = "1.0"
+hex = "0.4"
+handlebars = "3.2"
+handlebars_misc_helpers = "0.9.1"
+
 
 [dependencies.serde]
 version = "1.0"
@@ -33,7 +40,7 @@ optional = true
 version = "3.0.0-beta.1"
 features = [ "default", "wrap_help" ]
 
-
+# WASM/WASI specific deps:
 [target.'cfg(wasm32)'.dependencies.console_log]
 version = "0.2"
 features = [ "color" ]

@@ -5,10 +5,10 @@
 	- [~] fn params full support
 	- [~] fn T-params full support
 - [~+] dependency resolver
-	- [~+] offline: passed args (need ref.)
+	- [+] offline: passed args (need ref.)
 	- [~] offline: near files
 	- [-] offline: by connected DS (node)
-	- [-] online
+	- [+] online
 - optimization
 	- [~] dependency inliner
 	- [~] dead blocks elliminater
@@ -25,7 +25,7 @@
 	- [+] fn section
 		- [~] fn`<T>`
 		- [~] fn meta
-		- [+] fn knoleges
+		- [+] fn knowledge
 	- [~+] structs
 		- [~] structs`<T>`
 	- [~+] merge dependencies
