@@ -3,8 +3,9 @@ use std::fmt::{Display, LowerHex, UpperHex, Binary, Formatter, Result};
 use libra::libra_types::account_address::AccountAddress;
 use libra::move_core_types::identifier::IdentStr;
 use libra::move_core_types::language_storage::ModuleId;
+use serde::Serialize;
 
-#[derive(Debug, Clone, Eq, PartialEq, Hash)]
+#[derive(Debug, Clone, Eq, PartialEq, Hash, Serialize)]
 pub struct ModAddr(pub AccountAddress, pub String);
 
 impl ModAddr {

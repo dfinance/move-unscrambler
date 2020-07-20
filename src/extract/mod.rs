@@ -9,6 +9,7 @@ use crate::disasm::CompiledMoveRef;
 use crate::disasm::*;
 use crate::types::*;
 
+pub mod move_type;
 pub mod mod_addr;
 pub mod fn_addr;
 pub mod mod_handles;
@@ -18,6 +19,7 @@ pub mod functions;
 
 pub mod prelude {
     pub use super::{Extract, ExtractRef, ExtractMut, ExtractFrom, ExtractWith};
+    pub use super::move_type::*;
     pub use super::mod_addr::*;
     pub use super::fn_addr::*;
     pub use super::mod_handles::*;

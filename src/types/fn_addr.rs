@@ -1,8 +1,9 @@
 use std::fmt::{Display, LowerHex, UpperHex, Binary, Formatter, Result};
 use libra::libra_types::account_address::AccountAddress;
+use serde::Serialize;
 use super::ModAddr;
 
-#[derive(Debug, Clone, Eq, PartialEq, Hash)]
+#[derive(Debug, Clone, Eq, PartialEq, Hash, Serialize)]
 pub struct FnAddr(pub ModAddr, pub String);
 
 impl FnAddr {

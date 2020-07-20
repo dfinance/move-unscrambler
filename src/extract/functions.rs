@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use libra::vm::file_format::{CompiledModule, CodeUnit, CompiledScript};
 use libra::vm::access::ModuleAccess;
 use libra::vm::access::ScriptAccess;
@@ -8,7 +9,6 @@ use crate::{
         StructAddr, extract_ty_scrpt,
     },
 };
-use std::collections::HashMap;
 
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct FunctionInfo {

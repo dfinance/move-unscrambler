@@ -1,22 +1,23 @@
 use std::collections::HashMap;
+use std::ops::Deref;
 
+use serde::Serialize;
 use libra::vm::file_format::{
     CompiledModule, StructFieldInformation, TypeSignature, SignatureToken, Kind, StructHandle,
 };
 use libra::vm::access::ModuleAccess;
-use std::ops::Deref;
 use crate::types::{ModAddr, StructAddr, Ty, extract_ty, TypeParamKind, extract_type_param_kind};
 
 pub type StructMap = HashMap<StructAddr, StructInfo>;
 
-#[derive(Debug)]
+#[derive(Debug, Serialize)]
 pub enum StructKind {
     HasResourceAsType,
     Resource,
     Copyable,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Serialize)]
 pub struct StructInfo {
     is_native: bool,
     kind: StructKind,

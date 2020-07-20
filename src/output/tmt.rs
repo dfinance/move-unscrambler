@@ -10,18 +10,57 @@ use crate::cli::{OUTPUT_STDOUT, Output, OutputFmt};
 type FilesMap = HashMap<String, String>;
 
 const MAIN_OUTPUT_FILENAME: &str = "output";
-const DOC_TEMPLATE_NAME: &str = "document";
+const REPORT_TEMPLATE_NAME: &str = "document";
 
 mod defaults {
-    pub static DOC_TEMPLATE_MD_SRC: &str = include_str!("templates/tmt.md");
+    pub static REPORT_TEMPLATE_MD_SRC: &str = include_str!("templates/doc.hbs.md");
 }
 
 pub fn render<Ctx: Serialize>(cfg: &Output, ctx: Ctx) -> Result<()> {
     if !cfg!(target_arch = "wasm32") {
         prepare_fs(&cfg)?;
 
+        let _ctx = {
+            use serde_json::json;
+            json!({
+                "root": {
+                    "address": "0xROOT::Mod",
+                    "is_script": true,
+                    "entry_points": [
+                        {
+                            "address": "0xROOT::Mod::Fn0",
+                        },
+                        {
+                            "address": "0xROOT::Mod::Fn1",
+                        },
+                        ]
+                },
+                "dependencies":{
+                    "functions": [
+                        {
+                            "address": "0xDEP::Foo::Fn0",
+                        },
+                        {
+                            "address": "0xDEP::Foo::Fn1",
+                        },
+                    ],
+
+                    "structs": [
+                        {
+                            "address": "0xDEP::Foo::Struct0",
+                        },
+                        {
+                            "address": "0xDEP::Foo::Struct1",
+                        },
+                    ]
+                },
+            })
+        };
+
         let output = render_fmt(cfg, &ctx)?;
 
+        // TODO: save used diagrams to cfg.dir
+        // TODO: save `output` to cfg.dir
         error!("OUTPUT:");
         for (k, v) in output {
             error!("{}: {}", k, v);
@@ -65,11 +104,8 @@ fn render_fmt<Ctx: Serialize>(cfg: &Output, ctx: Ctx) -> Result<FilesMap> {
         _ => unreachable!(),
     };
 
-    hb.render(DOC_TEMPLATE_NAME, &ctx)
+    hb.render(REPORT_TEMPLATE_NAME, &ctx)
         .map(|output| {
-            // TODO: save used diagrams to cfg.dir
-            // TODO: save `output` to cfg.dir
-
             let filename = format!("{}.{}", MAIN_OUTPUT_FILENAME, fileext);
             files.insert(filename, output);
             files
@@ -93,7 +129,8 @@ fn setup_tmt<'hb>(cfg: &Output) -> Result<Handlebars<'hb>> {
     match &cfg.format {
         OutputFmt::Markdown => {
             // TODO: register all defaults:
-            hb.register_template_string(DOC_TEMPLATE_NAME, defaults::DOC_TEMPLATE_MD_SRC)?;
+            hb.register_template_string(REPORT_TEMPLATE_NAME, defaults::REPORT_TEMPLATE_MD_SRC)?;
+            // hb.register_partial("function", "FN: {{fn}}\nTHIS: {{this}}")?;
             // TODO: register all templates in the user's templates directory:..
         }
         OutputFmt::Html => unimplemented!("not yet"),

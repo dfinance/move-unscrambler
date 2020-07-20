@@ -83,7 +83,15 @@ fn validate_config(mut opts: cli::Opts) -> Result<cli::Opts> {
 
 fn run(opts: cli::Opts) {
     let (input_type, input, input_deps) = read_input(&opts);
+    let detected_input_type = input.extract();
     let (deps, missed_deps) = read_deps(&opts.input, &input_deps);
+
+    if input_type != detected_input_type {
+        warn!(
+            "Requested source type ({:?}) is not equal detected ({:?}).",
+            input_type, detected_input_type
+        );
+    }
 
     // extract structs, resources
     let struct_map: StructMap = {
@@ -120,12 +128,6 @@ fn run(opts: cli::Opts) {
         }
     };
 
-    {
-        for (addr, fi) in fn_map.iter() {
-            error!("FN: {} => {:#?}", addr, fi);
-        }
-    }
-
     // get entry point(s)
     let entry_points: Vec<FnAddr> = {
         let root_mod: ModAddr = input.extract();
@@ -137,15 +139,32 @@ fn run(opts: cli::Opts) {
             .collect()
     };
 
-    for ep in entry_points {
-        error!("entry point: {:x}", ep);
+    for (addr, fi) in fn_map.iter() {
+        debug!("FN: {} => {:#?}", addr, fi);
     }
+
+    for ep in &entry_points {
+        debug!("entry point: {:x}", ep);
+    }
+
+    let mut db = output::ctx::Db {
+        dialect: opts.input.dialect,
+        root: input,
+        root_type: input_type,
+        entry_points,
+        modules: deps,
+        functions: fn_map,
+        structs: struct_map,
+        missed_modules: missed_deps.iter().map(|(addr, _)| addr).cloned().collect(),
+    };
+
+    // TODO: filter out unused entries
 
     // TODO: analyze
 
-    // TODO: render
-
-    output::tmt::render(&opts.output, ())
+    // render
+    let ctx = output::ctx::create(&db);
+    output::tmt::render(&opts.output, ctx)
         .map_err(|err| error!("{}", err))
         .ok();
 }

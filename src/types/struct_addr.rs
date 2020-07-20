@@ -1,10 +1,11 @@
 use std::fmt::{Display, LowerHex, UpperHex, Binary, Formatter, Result};
 use libra::libra_types::account_address::AccountAddress;
+use serde::Serialize;
 use super::ModAddr;
 
 pub type ResAddr = StructAddr;
 
-#[derive(Debug, Clone, Eq, PartialEq, Hash)]
+#[derive(Debug, Clone, Eq, PartialEq, Hash, Serialize)]
 pub struct StructAddr(ModAddr, String);
 
 impl StructAddr {

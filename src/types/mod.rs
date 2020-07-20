@@ -11,14 +11,15 @@ pub use block_addr::*;
 use libra::vm::file_format::{CompiledModule, SignatureToken, Kind, CompiledScript};
 use libra::vm::access::ModuleAccess;
 use libra::{move_core_types::language_storage::ModuleId, vm::access::ScriptAccess};
+use serde::Serialize;
 
-#[derive(Debug)]
+#[derive(Debug, Eq, PartialEq, Serialize)]
 pub enum MoveType {
     Script,
     Module,
 }
 
-#[derive(Debug, Clone, Eq, PartialEq, Hash)]
+#[derive(Debug, Clone, Eq, PartialEq, Hash, Serialize)]
 pub enum TypeParamKind {
     All,
     Resource,
@@ -33,7 +34,7 @@ pub fn extract_type_param_kind(tp_kind: Kind) -> TypeParamKind {
     }
 }
 
-#[derive(Debug, Clone, Eq, PartialEq, Hash)]
+#[derive(Debug, Clone, Eq, PartialEq, Hash, Serialize)]
 pub enum Ty {
     Bool,
     U8,
