@@ -29,7 +29,6 @@ pub struct Output {
     /// Output target directory.
     /// Prints to stdout by default.
     #[clap(short = "o", long = "output", name = "output directory", default_value = OUTPUT_STDOUT)]
-    // TODO: add default_value = "--" and support output to stdout.
     pub dir: PathBuf,
 
     /// Forces override files in the output directory.
@@ -37,7 +36,7 @@ pub struct Output {
     pub force: bool,
 
     /// Sets format of output document.
-    #[clap(long = "fmt", possible_values = &[OutputFmt::MARKDOWN, OutputFmt::HTML], default_value = OutputFmt::DEFAULT)]
+    #[clap(long = "fmt", possible_values = &OutputFmt::ALL_OPTIONS, default_value = OutputFmt::DEFAULT)]
     pub format: OutputFmt,
 
     /// Inlines assets into the output document.
@@ -59,6 +58,8 @@ impl OutputFmt {
     const MARKDOWN: &'static str = "md";
     const HTML: &'static str = "html";
     const JSON: &'static str = "json";
+    const YAML: &'static str = "yaml";
+    const ALL_OPTIONS: [&'static str; 4] = [Self::MARKDOWN, Self::HTML, Self::JSON, Self::YAML];
 }
 
 impl std::str::FromStr for OutputFmt {

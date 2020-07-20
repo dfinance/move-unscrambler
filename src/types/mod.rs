@@ -12,8 +12,9 @@ use libra::vm::file_format::{CompiledModule, SignatureToken, Kind, CompiledScrip
 use libra::vm::access::ModuleAccess;
 use libra::{move_core_types::language_storage::ModuleId, vm::access::ScriptAccess};
 use serde::Serialize;
+use crate::cli::Dialect;
 
-#[derive(Debug, Eq, PartialEq, Serialize)]
+#[derive(Debug, Clone, Eq, PartialEq, Serialize)]
 pub enum MoveType {
     Script,
     Module,

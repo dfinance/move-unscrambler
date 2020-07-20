@@ -10,19 +10,19 @@ use crate::types::{ModAddr, StructAddr, Ty, extract_ty, TypeParamKind, extract_t
 
 pub type StructMap = HashMap<StructAddr, StructInfo>;
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Clone, Serialize)]
 pub enum StructKind {
     HasResourceAsType,
     Resource,
     Copyable,
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Clone, Serialize)]
 pub struct StructInfo {
-    is_native: bool,
-    kind: StructKind,
-    type_params: Vec<TypeParamKind>,
-    fields: HashMap<String, Ty>,
+    pub is_native: bool,
+    pub kind: StructKind,
+    pub type_params: Vec<TypeParamKind>,
+    pub fields: HashMap<String, Ty>,
 }
 
 impl StructInfo {
@@ -41,7 +41,7 @@ impl StructInfo {
     }
 }
 
-pub fn extract_struct_map(compiled_mod: &CompiledModule) -> HashMap<StructAddr, StructInfo> {
+pub fn extract_struct_map(compiled_mod: &CompiledModule) -> StructMap {
     let mut structs = HashMap::new();
     for struct_def in compiled_mod.struct_defs() {
         let struct_handle = compiled_mod.struct_handle_at(struct_def.struct_handle.clone());

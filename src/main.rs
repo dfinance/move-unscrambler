@@ -1,5 +1,8 @@
 // #![warn(missing_docs)]
 #![allow(unused_imports)] // temporarily in R&D state
+#![allow(unused_variables)] // temporarily in R&D state
+#![allow(unused_mut)] // temporarily in R&D state
+#![allow(dead_code)] // temporarily in R&D state
 
 #[macro_use]
 extern crate anyhow;
@@ -14,6 +17,7 @@ mod deps;
 mod types;
 mod disasm;
 mod extract;
+mod data;
 mod analyse;
 mod output;
 
@@ -26,7 +30,11 @@ use deps::resolver::UnresolvedMap;
 use types::MoveType;
 use types::{FnAddr, ModAddr};
 use extract::prelude::*;
-use output::utils::path_to_string;
+use output::{
+    ctx::{Ctx, IntoContext},
+    utils::path_to_string,
+};
+use data::{DbRoot, Db};
 
 fn main() {
     let opts = validate_config(cli::init());
@@ -147,11 +155,13 @@ fn run(opts: cli::Opts) {
         debug!("entry point: {:x}", ep);
     }
 
-    let mut db = output::ctx::Db {
+    let mut db = Db {
         dialect: opts.input.dialect,
-        root: input,
-        root_type: input_type,
-        entry_points,
+        root: DbRoot {
+            bc: input,
+            kind: detected_input_type,
+            entry_points,
+        },
         modules: deps,
         functions: fn_map,
         structs: struct_map,
@@ -163,7 +173,7 @@ fn run(opts: cli::Opts) {
     // TODO: analyze
 
     // render
-    let ctx = output::ctx::create(&db);
+    let ctx = db.into_context();
     output::tmt::render(&opts.output, ctx)
         .map_err(|err| error!("{}", err))
         .ok();

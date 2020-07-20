@@ -20,42 +20,42 @@ pub fn render<Ctx: Serialize>(cfg: &Output, ctx: Ctx) -> Result<()> {
     if !cfg!(target_arch = "wasm32") {
         prepare_fs(&cfg)?;
 
-        let _ctx = {
-            use serde_json::json;
-            json!({
-                "root": {
-                    "address": "0xROOT::Mod",
-                    "is_script": true,
-                    "entry_points": [
-                        {
-                            "address": "0xROOT::Mod::Fn0",
-                        },
-                        {
-                            "address": "0xROOT::Mod::Fn1",
-                        },
-                        ]
-                },
-                "dependencies":{
-                    "functions": [
-                        {
-                            "address": "0xDEP::Foo::Fn0",
-                        },
-                        {
-                            "address": "0xDEP::Foo::Fn1",
-                        },
-                    ],
+        // let ctx = {
+        //     use serde_json::json;
+        //     json!({
+        //         "root": {
+        //             "address": "0xROOT::Mod",
+        //             "is_script": true,
+        //             "entry_points": [
+        //                 {
+        //                     "address": "0xROOT::Mod::Fn0",
+        //                 },
+        //                 {
+        //                     "address": "0xROOT::Mod::Fn1",
+        //                 },
+        //                 ]
+        //         },
+        //         "dependencies":{
+        //             "functions": [
+        //                 {
+        //                     "address": "0xDEP::Foo::Fn0",
+        //                 },
+        //                 {
+        //                     "address": "0xDEP::Foo::Fn1",
+        //                 },
+        //             ],
 
-                    "structs": [
-                        {
-                            "address": "0xDEP::Foo::Struct0",
-                        },
-                        {
-                            "address": "0xDEP::Foo::Struct1",
-                        },
-                    ]
-                },
-            })
-        };
+        //             "structs": [
+        //                 {
+        //                     "address": "0xDEP::Foo::Struct0",
+        //                 },
+        //                 {
+        //                     "address": "0xDEP::Foo::Struct1",
+        //                 },
+        //             ]
+        //         },
+        //     })
+        // };
 
         let output = render_fmt(cfg, &ctx)?;
 
@@ -63,7 +63,7 @@ pub fn render<Ctx: Serialize>(cfg: &Output, ctx: Ctx) -> Result<()> {
         // TODO: save `output` to cfg.dir
         error!("OUTPUT:");
         for (k, v) in output {
-            error!("{}: {}", k, v);
+            error!("OUT FILE: {}: {}", k, v);
         }
     } else {
         unimplemented!("not yet");
@@ -122,6 +122,7 @@ fn setup_tmt<'hb>(cfg: &Output) -> Result<Handlebars<'hb>> {
     {
         handlebars_helper!(hex: |v: i64| format!("0x{:x}", v));
         hb.register_helper("hex", Box::new(hex));
+        // TODO: impl native partial for address
 
         handlebars_misc_helpers::setup_handlebars(&mut hb);
     }
