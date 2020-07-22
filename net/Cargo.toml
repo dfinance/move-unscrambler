@@ -1,5 +1,5 @@
 [package]
-name = "move-describe-network"
+name = "move-unscrambler-network"
 version = "0.1.0"
 edition = "2018"
 

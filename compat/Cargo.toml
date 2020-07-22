@@ -1,0 +1,11 @@
+[package]
+name = "move-compat"
+version = "0.1.0"
+edition = "2018"
+
+[dependencies]
+log = "0.4"
+anyhow = "1.0.31"
+libra = { package = "libra-deps", path = "../libra" }
+
+[features]
