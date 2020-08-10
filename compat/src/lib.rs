@@ -1,390 +1,144 @@
 #[macro_use]
-extern crate log;
-#[macro_use]
 extern crate anyhow;
 
 use std::{
     io::Cursor,
-    ops::{Range, RangeTo},
-    convert::TryInto,
 };
 use anyhow::Result;
+use libra::vm::errors::{BinaryLoaderResult, PartialVMError};
 use libra::libra_types::account_address::AccountAddress;
-use libra::vm::file_format_common::{TableType, BinaryConstants};
+use libra::move_core_types::vm_status::StatusCode;
+use libra::vm::file_format_common::{TableType};
 use libra::vm::file_format_common::*;
+use libra::vm::file_format::SignatureToken;
+use libra::vm::deserializer::{check_binary, load_signature_token, load_constant_size};
 
-mod detect;
-mod convert;
-mod utils;
-use utils::*;
+mod context;
+mod mutator;
 
-type Cur<'a> = Cursor<&'a [u8]>;
-pub type BinVersion = (u8, u8);
+use context::*;
+use crate::mutator::Mutator;
 
-const NATIVE_ADDR_LEN: usize = AccountAddress::LENGTH;
+const DFIN_ADDR_LEN: usize = AccountAddress::LENGTH;
+const LIBRA_ADDR_LEN: usize = 16;
 
-const MAGIC_SIZE: usize = BinaryConstants::LIBRA_MAGIC_SIZE;
-const MAGIC_POS: RangeTo<usize> = ..MAGIC_SIZE;
-const VERSION_SIZE: usize = 2;
-const VERSION_POS: Range<usize> = MAGIC_SIZE..(MAGIC_SIZE + VERSION_SIZE);
+pub fn adapt(bytes: &mut Vec<u8>) -> Result<()> {
+    let mut cur = Cursor::new(bytes.as_slice());
+    let mut mutator = Mutator::new();
 
-pub fn adapt(bytes: &mut Vec<u8>) {
-    debug!("native address length: {}", NATIVE_ADDR_LEN);
-    debug!("supported address length: ≦ {}", NATIVE_ADDR_LEN);
+    check_binary(&mut cur).map_err(|err| anyhow!("{:?}", err))?;
+    make_diff(&mut cur, &mut mutator)?;
 
-    let notify_err = |err| return error!("{}", err);
+    //dbg!(&mutator);
+    dbg!(hex::encode(&bytes));
 
-    let result = check(&bytes)
-        .map_err(notify_err)
-        .and_then(|_| read_tables(&bytes).map_err(notify_err))
-        .and_then(|changes| apply_changes(changes, bytes).map_err(notify_err));
+    mutator.mutate(bytes);
 
-    {
-        // final checks:
-        debug_assert!(result.is_ok());
-        debug_assert!(matches!(read_tables(&bytes), Ok(Changes::None)));
-    }
-}
-
-#[derive(Clone, Debug, PartialEq, Eq)]
-struct Table {
-    kind: u8, /* :TableType */
-    offset: u32,
-    length: u32,
-}
-
-fn check(bytes: &[u8]) -> Result<()> {
-    check_magic(&bytes)?;
-    check_version(&bytes)?;
+    dbg!(hex::encode(&bytes));
     Ok(())
 }
 
-#[derive(Clone, Debug)]
-enum Changes {
-    /// When changes are not needed
-    None,
+fn make_diff(cur: &mut Cursor<&[u8]>, mutator: &mut Mutator) -> Result<()> {
+    let table_len = read_uleb128_as_u64(cur)?;
 
-    /// Contains all new tables mapped to old ones
-    Some(Vec<(Table, Range<u64>)>, Vec<ChangedTable>),
-}
+    let header_len = cur.position() as u32;
+    let header_size = calc_header_size(cur, table_len)?;
 
-#[derive(Clone, Debug)]
-struct ChangedTable {
-    /// index of original table head
-    i: usize,
-    /// modified body
-    body: Vec<u8>,
-    pos: PosInfo,
-}
+    let mut additional_offset: u32 = 0;
+    for _ in 0..table_len {
+        let kind = read_u8(cur)?;
 
-#[derive(Clone, Debug)]
-struct PosInfo {
-    heads: Range<u64>,
-    target_head: Range<u64>,
-    target_body: Range<u64>,
-}
+        let offset = if additional_offset > 0 {
+            let start_pos = cur.position();
+            let offset = read_uleb128_as_u64(cur)? as u32;
+            make_uleb128_diff(start_pos, cur.position(), offset + additional_offset, mutator)?;
+            offset
+        } else {
+            read_uleb128_as_u64(cur)? as u32
+        };
 
-fn read_tables(bytes: &[u8]) -> Result<Changes> {
-    let mut cursor = Cursor::new(&bytes[VERSION_POS.end..]);
+        let t_len_start_pos = cur.position();
+        let t_len = read_uleb128_as_u64(cur)? as u32;
+        let t_len_end_pos = cur.position();
 
-    let tlen = read_uleb128_as_u64(&mut cursor)?;
-    // debug!("reading {} tables", tlen,);
-    assert!(TABLE_COUNT_MAX >= tlen);
+         let offset_diff = if kind == TableType::ADDRESS_IDENTIFIERS as u8 {
+            handle_address_identifiers(TableContext::new(cur, offset + header_size + header_len, t_len), mutator)
+        } else if kind == TableType::CONSTANT_POOL as u8 {
+            handle_const_pool(TableContext::new(cur, offset + header_size + header_len, t_len), mutator).map_err(|err| anyhow!("{:?}", err))?
+        } else {
+            0
+        };
 
-    let the_start_of_heads = cursor.position() as usize + VERSION_POS.end;
-
-    let mut tables = Vec::new();
-    read_tables_heads(&mut cursor, tlen.try_into()?, &mut tables)?;
-
-    // fix offset:
-    tables.iter_mut().for_each(|t| {
-        t.1.start += VERSION_POS.end as u64;
-        t.1.end += VERSION_POS.end as u64;
-    });
-
-    let the_end_of_heads = cursor.position() as usize + VERSION_POS.end;
-
-    let addr_tables = tables
-        .iter()
-        .enumerate()
-        .filter(|(_, (t, _))| t.kind == TableType::ADDRESS_IDENTIFIERS as u8);
-
-    let detected_addr_len = {
-        let mut addr_tables_lengths = Vec::new();
-        let address_tables = addr_tables.clone();
-        address_tables.for_each(|(_, (t, _))| addr_tables_lengths.push(t.length));
-        detect::address_length(&addr_tables_lengths[..])?
-    };
-
-    let result = if detected_addr_len as usize == NATIVE_ADDR_LEN {
-        Changes::None
-    } else {
-        debug!("detected addr len: {}", detected_addr_len);
-
-        let mut fixed_bodies = Vec::new();
-        for (i, (t, p)) in addr_tables {
-            let pos_info = {
-                let heads = the_start_of_heads as u64..the_end_of_heads as u64;
-                let target_head = p.to_owned();
-                let target_body_from = the_end_of_heads as u64 + t.offset as u64;
-                let target_body = target_body_from..(target_body_from + t.length as u64);
-                PosInfo {
-                    heads,
-                    target_head,
-                    target_body,
-                }
-            };
-
-            let buf = &bytes[the_end_of_heads..(the_end_of_heads + (t.offset + t.length) as usize)];
-            let new_body = expand_addr_table(buf, &t, detected_addr_len as usize);
-            fixed_bodies.push(ChangedTable {
-                i,
-                body: new_body,
-                pos: pos_info,
-            });
+        if offset_diff > 0 {
+            make_uleb128_diff(t_len_start_pos, t_len_end_pos, t_len + offset_diff, mutator)?;
         }
 
-        Changes::Some(tables, fixed_bodies)
-    };
-
-    Ok(result)
-}
-
-fn apply_changes(changes: Changes, bytes: &mut Vec<u8>) -> Result<()> {
-    match changes {
-        Changes::None => {}
-        Changes::Some(heads, changes) => {
-            for item in changes {
-                trace!("applying fixes for table {}", item.i);
-
-                let (target_head, _target_head_pos) = &heads[item.i];
-                let body = &item.body;
-                let body_len_dif = body.len() - heads[item.i].0.length as usize;
-
-                // fix offset for each head where offset > this body position
-                // collect all heads where offset should be fixed:
-                let mut heads_to_fix_offset = vec![item.i];
-                {
-                    for (i, (t, _)) in heads.iter().enumerate() {
-                        if t.offset > target_head.offset {
-                            heads_to_fix_offset.push(i);
-                        }
-                    }
-                    heads_to_fix_offset.sort();
-                    debug!("heads to fix offset: {:?}", heads_to_fix_offset);
-                }
-
-                let mut result = Vec::new();
-                let mut cursor = Cursor::new(&bytes[..]);
-
-                for i in heads_to_fix_offset {
-                    let (head, head_pos) = &heads[i];
-
-                    // read to target head start:
-                    {
-                        result.extend(bytes[result.len()..head_pos.start as usize].iter().cloned());
-                        cursor.set_position(head_pos.start);
-                        assert_eq!(result.len(), cursor.position() as usize);
-                    }
-
-                    // this head:
-                    {
-                        let mut this_head = read_table_head(&mut cursor)?;
-                        assert_eq!(head, &this_head);
-                        assert_eq!(head_pos.end, cursor.position());
-
-                        // fix head values:
-                        if i == item.i && &this_head == target_head {
-                            this_head.length = body.len() as u32;
-                            debug!("target head ({}) length fixed", i);
-                        } else {
-                            this_head.offset += body_len_dif as u32;
-                            debug!("following head ({}) offset fixed", i);
-                        }
-
-                        // write new head:
-                        let new_head_bin = write_table_head(&this_head)?;
-                        result.extend(new_head_bin.into_iter());
-                        assert_eq!(result.len(), cursor.position() as usize);
-
-                        // check just written head:
-                        {
-                            cursor.set_position(head_pos.start);
-                            let new_head = read_table_head(&mut cursor)?;
-
-                            assert_eq!(this_head.kind, new_head.kind);
-
-                            if i == item.i {
-                                assert_eq!(this_head.offset, new_head.offset);
-                                assert_ne!(this_head.length, new_head.length);
-                            } else {
-                                assert_ne!(this_head.offset, new_head.offset);
-                                assert_eq!(this_head.length, new_head.length);
-                            }
-                        }
-                    }
-
-                    cursor.set_position(head_pos.end);
-                    assert_eq!(result.len(), cursor.position() as usize);
-                }
-
-                // other following heads:
-                {
-                    cursor.set_position(item.pos.target_body.start);
-
-                    result.extend(
-                        bytes[result.len()..cursor.position() as usize]
-                            .iter()
-                            .cloned(),
-                    );
-
-                    assert_eq!(result.len(), cursor.position() as usize);
-                }
-
-                // write body:
-                {
-                    result.extend(body.iter().cloned());
-                    cursor.set_position(item.pos.target_body.end);
-                }
-
-                // finally:
-                result.extend(bytes[cursor.position() as usize..].iter().cloned());
-                assert_eq!(result.len(), bytes.len() + body_len_dif);
-
-                let result_len = result.len();
-
-                // absolutely finally:
-                bytes.clear();
-                bytes.extend(result.into_iter());
-
-                assert_eq!(result_len, bytes.len());
-            }
-        }
+        additional_offset += offset_diff;
     }
 
     Ok(())
 }
 
-fn expand_addr_table(bytes: &[u8], table: &Table, addr_length: usize) -> Vec<u8> {
-    // read addresses:
-    let addrs = read_table_address_identifiers(bytes, table, addr_length);
-    assert_eq!(table.length as usize / addr_length, addrs.len());
+fn calc_header_size(cur: &mut Cursor<&[u8]>, table_len: u64) -> Result<u32> {
+    let start = cur.position() as u32;
 
-    let result = create_table_address_identifiers(&addrs);
-
-    assert!(result.len() > table.length as usize);
-    assert_eq!(
-        result.len(),
-        table.length as usize + ((NATIVE_ADDR_LEN - addr_length) * addrs.len())
-    );
-
-    result
-}
-
-fn create_table_address_identifiers(addrs: &[AccountAddress]) -> Vec<u8> {
-    addrs
-        .into_iter()
-        .flat_map(|addr| addr.to_vec().into_iter())
-        .collect()
-}
-
-fn read_table_address_identifiers(
-    bytes: &[u8],
-    table: &Table,
-    addr_length: usize,
-) -> Vec<AccountAddress> {
-    trace!("reading addrs as {}-to-{}b", addr_length, NATIVE_ADDR_LEN);
-
-    let mut result = Vec::new();
-
-    if NATIVE_ADDR_LEN != addr_length {
-        let mut start = table.offset as usize;
-
-        for _ in 0..table.length as usize / addr_length {
-            let end_addr = start + addr_length;
-
-            let mut addr_bytes = [0; NATIVE_ADDR_LEN];
-
-            convert::expand_addr(bytes[start..end_addr].iter().cloned(), addr_length)
-                .enumerate()
-                .for_each(|(i, b)| addr_bytes[i] = b);
-
-            let addr = AccountAddress::new(addr_bytes);
-
-            start = end_addr;
-            result.push(addr);
-        }
-    } else {
-        // actually unreachable part
-        let mut start = table.offset as usize;
-        for _ in 0..table.length as usize / addr_length {
-            let end_addr = start + addr_length;
-            let address: Result<AccountAddress> = (&bytes[start..end_addr]).try_into();
-            match address {
-                Ok(addr) => result.push(addr),
-                Err(err) => error!("Cannot read address: {}", err),
-            }
-            start = end_addr;
-        }
+    for _ in 0..table_len {
+        read_u8(cur)?;
+        read_uleb128_as_u64(cur)?;
+        read_uleb128_as_u64(cur)?;
     }
 
-    result
+    let end = cur.position() as u32;
+    cur.set_position(start as u64);
+    Ok(end - start)
 }
 
-fn check_magic(bytes: &[u8]) -> Result<()> {
-    if let Some(magic) = bytes.get(MAGIC_POS) {
-        if magic != &BinaryConstants::LIBRA_MAGIC {
-            // TODO: throw StatusCode::BAD_MAGIC
-        }
-    } else {
-        return Err(anyhow!("Bad binary header"));
-    }
+fn make_uleb128_diff(
+    start_pos: u64,
+    end_pos: u64,
+    new_offset: u32,
+    mutator: &mut Mutator,
+) -> Result<()> {
+    let mut binary = BinaryData::new();
+    write_u64_as_uleb128(&mut binary, new_offset as u64)?;
+    mutator.make_diff(start_pos as usize, end_pos as usize, binary.into_inner());
     Ok(())
 }
 
-/// [major, minor]
-fn check_version(bytes: &[u8]) -> Result<BinVersion> {
-    if let Some(&[major, minor]) = bytes.get(VERSION_POS) {
-        debug!("bytecode version: {}.{}", major, minor);
-        Ok((major, minor))
+fn handle_address_identifiers(ctx: TableContext, mutator: &mut Mutator) -> u32 {
+    if ctx.len % (LIBRA_ADDR_LEN as u32) == 0 {
+        for idx in (0..ctx.len).step_by(LIBRA_ADDR_LEN) {
+            let index = ctx.position() + idx as usize;
+            mutator.make_diff(index, index, vec![0x0, 0x0, 0x0, 0x0]);
+        }
+        ctx.len / (LIBRA_ADDR_LEN as u32) * (DFIN_ADDR_LEN - LIBRA_ADDR_LEN) as u32
     } else {
-        Err(anyhow!("Unable to read version"))
+        0
     }
 }
 
-fn read_tables_heads(c: &mut Cur, len: usize, tables: &mut Vec<(Table, Range<u64>)>) -> Result<()> {
-    for _ in 0..len {
-        let start = c.position();
-        let head = read_table_head(c)?;
-        let end = c.position();
-        tables.push((head, start..end));
+fn handle_const_pool(ctx: TableContext, mutator: &mut Mutator) -> BinaryLoaderResult<u32> {
+    let end_offset = ctx.cursor.position() + ctx.len as u64;
+    let mut additional_offset = 0;
+    while ctx.cursor.position() < end_offset {
+        let type_ = load_signature_token(ctx.cursor)?;
+
+        let size_start_offset = ctx.cursor.position();
+        let size = load_constant_size(ctx.cursor)? as u32;
+        let size_end_offset = ctx.cursor.position();
+
+        if SignatureToken::Address == type_ {
+            let diff_size = (DFIN_ADDR_LEN - LIBRA_ADDR_LEN) as u32;
+            make_uleb128_diff(size_start_offset, size_end_offset, size + diff_size, mutator)
+                .map_err(|err| PartialVMError::new(StatusCode::MALFORMED).with_message(format!("{:?}", err)))?;
+            additional_offset += diff_size;
+            let index = ctx.cursor.position() as usize;
+            mutator.make_diff(index, index, vec![0x0, 0x0, 0x0, 0x0]);
+            ctx.cursor.set_position(ctx.cursor.position() + size as u64);
+        } else {
+            ctx.cursor.set_position(ctx.cursor.position() + size as u64);
+        }
     }
-    Ok(())
-}
 
-fn read_table_head(r: &mut Cur) -> Result<Table> {
-    // let start = r.position();
-    let kind: u8 = read_u8(r)?.try_into()?;
-    let offset: u32 = read_uleb128_as_u64(r)?.try_into()?;
-    let count: u32 = read_uleb128_as_u64(r)?.try_into()?;
-    // debug!("[R]  table head size: {}", r.position() - start);
-
-    assert!(TABLE_OFFSET_MAX >= offset as u64);
-    assert!(TABLE_SIZE_MAX >= count as u64);
-
-    Ok(Table {
-        kind,
-        offset,
-        length: count,
-    })
-}
-
-fn write_table_head(t: &Table) -> Result<Vec<u8>> {
-    let mut buf = BinaryData::new();
-    write_u8(&mut buf, t.kind)?;
-    write_u64_as_uleb128(&mut buf, t.offset as u64)?;
-    write_u64_as_uleb128(&mut buf, t.length as u64)?;
-    // debug!("[WR] table head size: {}", buf.as_inner().len());
-
-    Ok(buf.into_inner())
+    Ok(additional_offset)
 }

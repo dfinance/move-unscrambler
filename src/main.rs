@@ -209,7 +209,7 @@ fn read_deps(opts: &cli::Input, input_deps: &[ModAddr]) -> (ModMap, UnresolvedMa
 
 fn read_input(opts: &cli::Opts) -> (MoveType, CompiledMove, Vec<ModAddr>) {
     let mut bytes = std::fs::read(&opts.input.offline.path).expect("Unable to read input bytecode");
-    compat::adapt(&mut bytes);
+    compat::adapt(&mut bytes).expect("Valid bytecode.");
 
     let source_type = match opts.input.offline.kind {
         InputType::Script => MoveType::Script,
@@ -240,7 +240,7 @@ fn read_offline_deps(opts: &cli::Input) -> ModMap {
     let deps = deps::offline::OfflineDependencySearch::new_from_opts(&opts.offline);
     deps.into_load_all().for_each(|(k, v)| match v {
         Ok(mut bytes) => {
-            compat::adapt(&mut bytes);
+            compat::adapt(&mut bytes).expect("Valid bytecode.");
             index.insert_file(k, bytes)
         }
         Err(err) => error!("Unable to load {} : {}", path_to_string(&k), err),

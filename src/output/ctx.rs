@@ -143,7 +143,7 @@ where
         let root = self.root();
         let root_bc = root.extract_ref();
 
-		// XXX: opt
+        // XXX: opt
         let mut strct_map: StructKnowledgeMap<Si> = self.extract();
         let mut fn_map: FnKnowledgeMap<FnKnowledgeBasic> = self
             .extract_ref()
