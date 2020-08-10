@@ -32,30 +32,34 @@ impl Mutator {
                 continue;
             }
 
-            if mutation_diff_len == 0 {
-                let dest = &mut buffer[mutation.source_range_with_diff(offset_diff)];
-                dest.copy_from_slice(&mutation.value);
-            } else if mutation_diff_len > 0 {
-                let start = mutation.start_with_diff(offset_diff);
-                let mutation_diff_len = mutation_diff_len.abs() as usize;
-
-                for src_index in 0..mutation_diff_len {
-                    buffer.insert(start + src_index, mutation.value[src_index]);
+            match mutation_diff_len {
+                0 => {
+                    let dest = &mut buffer[mutation.source_range_with_diff(offset_diff)];
+                    dest.copy_from_slice(&mutation.value);
                 }
+                len if len > 0 => {
+                    let start = mutation.start_with_diff(offset_diff);
+                    let mutation_diff_len = mutation_diff_len.abs() as usize;
 
-                let mut range = mutation.source_range_with_diff(offset_diff);
-                range.start = range.start + mutation_diff_len;
-                range.end = range.end + mutation_diff_len;
-                let dest = &mut buffer[range];
+                    for src_index in 0..mutation_diff_len {
+                        buffer.insert(start + src_index, mutation.value[src_index]);
+                    }
 
-                dest.copy_from_slice(&mutation.value[mutation_diff_len..]);
-            } else {
-                let start = mutation.start_with_diff(offset_diff);
-                for _ in 0..mutation_diff_len.abs() {
-                    buffer.remove(start);
+                    let mut range = mutation.source_range_with_diff(offset_diff);
+                    range.start += mutation_diff_len;
+                    range.end += mutation_diff_len;
+                    let dest = &mut buffer[range];
+
+                    dest.copy_from_slice(&mutation.value[mutation_diff_len..]);
                 }
-                let dest = &mut buffer[start..start + mutation.len()];
-                dest.copy_from_slice(&mutation.value);
+                _ => {
+                    let start = mutation.start_with_diff(offset_diff);
+                    for _ in 0..mutation_diff_len.abs() {
+                        buffer.remove(start);
+                    }
+                    let dest = &mut buffer[start..start + mutation.len()];
+                    dest.copy_from_slice(&mutation.value);
+                }
             }
 
             offset_diff += mutation_diff_len;
@@ -76,7 +80,8 @@ impl Diff {
     }
 
     pub fn source_range_with_diff(&self, offset_diff: isize) -> Range<usize> {
-        ((self.source_range.start as isize) + offset_diff) as usize..((self.source_range.end as isize) + offset_diff) as usize
+        ((self.source_range.start as isize) + offset_diff) as usize
+            ..((self.source_range.end as isize) + offset_diff) as usize
     }
 
     pub fn start_with_diff(&self, offset_diff: isize) -> usize {
@@ -120,7 +125,7 @@ mod tests {
 
     #[test]
     fn test_equal_size_mutation_1() {
-        let mut buffer = vec![0x0A, 0x0B, 0x0C, 0x4, 0x5, 0x6, 0x0A, 0x0B, 0x0C, ];
+        let mut buffer = vec![0x0A, 0x0B, 0x0C, 0x4, 0x5, 0x6, 0x0A, 0x0B, 0x0C];
         let mut m = Mutator::new();
 
         m.make_diff(0, 3, vec![0x1, 0x2, 0x3]);
@@ -133,7 +138,10 @@ mod tests {
 
     #[test]
     fn test_cat_mutation() {
-        let mut buffer = vec![0x0D, 0x0E, 0x0A, 0x1, 0x0D, 0x0E, 0x0A, 0x2, 0x3, 0x4, 0x5, 0x6, 0x7, 0x0D, 0x0E, 0x0A, 0x8, 0x9, 0x0D, 0x0E, 0x0A];
+        let mut buffer = vec![
+            0x0D, 0x0E, 0x0A, 0x1, 0x0D, 0x0E, 0x0A, 0x2, 0x3, 0x4, 0x5, 0x6, 0x7, 0x0D, 0x0E,
+            0x0A, 0x8, 0x9, 0x0D, 0x0E, 0x0A,
+        ];
         let mut m = Mutator::new();
 
         m.make_diff(0, 3, vec![]);
@@ -148,7 +156,10 @@ mod tests {
 
     #[test]
     fn test_cat_mutation_1() {
-        let mut buffer = vec![0x0D, 0x0E, 0x0A, 0x1, 0x0D, 0x0E, 0x0A, 0x4, 0x5, 0x6, 0x7, 0x0D, 0x0E, 0x0A, 0x8, 0x9, 0x0D, 0x0E, 0x0A, 0x00, 0x00];
+        let mut buffer = vec![
+            0x0D, 0x0E, 0x0A, 0x1, 0x0D, 0x0E, 0x0A, 0x4, 0x5, 0x6, 0x7, 0x0D, 0x0E, 0x0A, 0x8,
+            0x9, 0x0D, 0x0E, 0x0A, 0x00, 0x00,
+        ];
         let mut m = Mutator::new();
 
         m.make_diff(0, 3, vec![]);
@@ -159,7 +170,10 @@ mod tests {
 
         m.mutate(&mut buffer);
 
-        assert_eq!(buffer, vec![0x1, 0x2, 0x3, 0x4, 0x5, 0x6, 0x7, 0x8, 0x9, 0x0A]);
+        assert_eq!(
+            buffer,
+            vec![0x1, 0x2, 0x3, 0x4, 0x5, 0x6, 0x7, 0x8, 0x9, 0x0A]
+        );
     }
 
     #[test]
@@ -173,7 +187,10 @@ mod tests {
 
         m.mutate(&mut buffer);
 
-        assert_eq!(buffer, vec![0x1, 0x2, 0x3, 0x4, 0x5, 0x6, 0x7, 0x8, 0x9, 0x0A]);
+        assert_eq!(
+            buffer,
+            vec![0x1, 0x2, 0x3, 0x4, 0x5, 0x6, 0x7, 0x8, 0x9, 0x0A]
+        );
     }
 
     #[test]
@@ -188,6 +205,9 @@ mod tests {
 
         m.mutate(&mut buffer);
 
-        assert_eq!(buffer, vec![0x1, 0x2, 0x3, 0x4, 0x5, 0x6, 0x7, 0x8, 0x9, 0x0A]);
+        assert_eq!(
+            buffer,
+            vec![0x1, 0x2, 0x3, 0x4, 0x5, 0x6, 0x7, 0x8, 0x9, 0x0A]
+        );
     }
 }

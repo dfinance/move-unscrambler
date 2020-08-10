@@ -1,9 +1,7 @@
 #[macro_use]
 extern crate anyhow;
 
-use std::{
-    io::Cursor,
-};
+use std::{io::Cursor};
 use anyhow::Result;
 use libra::vm::errors::{BinaryLoaderResult, PartialVMError};
 use libra::libra_types::account_address::AccountAddress;
@@ -28,13 +26,7 @@ pub fn adapt(bytes: &mut Vec<u8>) -> Result<()> {
 
     check_binary(&mut cur).map_err(|err| anyhow!("{:?}", err))?;
     make_diff(&mut cur, &mut mutator)?;
-
-    //dbg!(&mutator);
-    dbg!(hex::encode(&bytes));
-
     mutator.mutate(bytes);
-
-    dbg!(hex::encode(&bytes));
     Ok(())
 }
 
@@ -51,7 +43,12 @@ fn make_diff(cur: &mut Cursor<&[u8]>, mutator: &mut Mutator) -> Result<()> {
         let offset = if additional_offset > 0 {
             let start_pos = cur.position();
             let offset = read_uleb128_as_u64(cur)? as u32;
-            make_uleb128_diff(start_pos, cur.position(), offset + additional_offset, mutator)?;
+            make_uleb128_diff(
+                start_pos,
+                cur.position(),
+                offset + additional_offset,
+                mutator,
+            )?;
             offset
         } else {
             read_uleb128_as_u64(cur)? as u32
@@ -61,10 +58,17 @@ fn make_diff(cur: &mut Cursor<&[u8]>, mutator: &mut Mutator) -> Result<()> {
         let t_len = read_uleb128_as_u64(cur)? as u32;
         let t_len_end_pos = cur.position();
 
-         let offset_diff = if kind == TableType::ADDRESS_IDENTIFIERS as u8 {
-            handle_address_identifiers(TableContext::new(cur, offset + header_size + header_len, t_len), mutator)
+        let offset_diff = if kind == TableType::ADDRESS_IDENTIFIERS as u8 {
+            handle_address_identifiers(
+                TableContext::new(cur, offset + header_size + header_len, t_len),
+                mutator,
+            )
         } else if kind == TableType::CONSTANT_POOL as u8 {
-            handle_const_pool(TableContext::new(cur, offset + header_size + header_len, t_len), mutator).map_err(|err| anyhow!("{:?}", err))?
+            handle_const_pool(
+                TableContext::new(cur, offset + header_size + header_len, t_len),
+                mutator,
+            )
+            .map_err(|err| anyhow!("{:?}", err))?
         } else {
             0
         };
@@ -129,8 +133,15 @@ fn handle_const_pool(ctx: TableContext, mutator: &mut Mutator) -> BinaryLoaderRe
 
         if SignatureToken::Address == type_ {
             let diff_size = (DFIN_ADDR_LEN - LIBRA_ADDR_LEN) as u32;
-            make_uleb128_diff(size_start_offset, size_end_offset, size + diff_size, mutator)
-                .map_err(|err| PartialVMError::new(StatusCode::MALFORMED).with_message(format!("{:?}", err)))?;
+            make_uleb128_diff(
+                size_start_offset,
+                size_end_offset,
+                size + diff_size,
+                mutator,
+            )
+            .map_err(|err| {
+                PartialVMError::new(StatusCode::MALFORMED).with_message(format!("{:?}", err))
+            })?;
             additional_offset += diff_size;
             let index = ctx.cursor.position() as usize;
             mutator.make_diff(index, index, vec![0x0, 0x0, 0x0, 0x0]);
