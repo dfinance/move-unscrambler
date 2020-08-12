@@ -32,7 +32,7 @@ pub trait Extract<T> {
     fn extract(&self) -> T;
 }
 
-pub trait ExtractRef<T:?Sized> {
+pub trait ExtractRef<T: ?Sized> {
     fn extract_ref(&self) -> &T;
 }
 
